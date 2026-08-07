@@ -2,11 +2,7 @@ import os
 
 
 class DevelopmentConfig:
-    # Safely handle missing DB_PW environment variable
-    db_password = os.getenv("DB_PW", "defaultpassword")
-    SQLALCHEMY_DATABASE_URI = (
-        f"mysql+mysqlconnector://root:{db_password}@localhost/mechanic_db"
-    )
+    SQLALCHEMY_DATABASE_URI = "sqlite:///dev.db"
     DEBUG = True
     CACHE_TYPE = "SimpleCache"
     CACHE_DEFAULT_TIMEOUT = 300  # Default cache timeout in seconds
