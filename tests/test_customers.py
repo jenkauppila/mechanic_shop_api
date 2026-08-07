@@ -43,6 +43,18 @@ def test_invalid_customer_creation(client):
     assert response.status_code == 400
     assert "email" in response.json
 
+def test_create_customer_invalid_phone(client):
+    customer_data = {
+        "name": "Test Customer",
+        "email": "phonetest@example.com",
+        "phone": "not-a-phone-number",
+        "password": "testpass123",
+    }
+    res = client.post("/customers/", json=customer_data)
+    assert res.status_code == 400
+    assert "phone" in res.json
+
+
 def test_create_customer_duplicate_email(client):
     client.post("/customers/", json=create_test_customer())
     response = client.post("/customers/", json=create_test_customer())

@@ -25,7 +25,7 @@ def create_test_mechanic():
     return {
         "name": "Jane Wrench",
         "email": "jane@fixit.com",
-        "phone": "555-1234",
+        "phone": "555-123-4567",
         "salary": 60000,
     }
 
@@ -42,6 +42,14 @@ def test_invalid_mechanic_creation(client):
     response = client.post("/mechanics/", json=bad_data)
     assert response.status_code == 400
     assert "email" in response.json or "Missing" in str(response.json)
+
+
+def test_create_mechanic_invalid_phone(client):
+    mechanic_data = create_test_mechanic()
+    mechanic_data["phone"] = "not-a-phone-number"
+    response = client.post("/mechanics/", json=mechanic_data)
+    assert response.status_code == 400
+    assert "phone" in response.json
 
 
 def test_create_mechanic_duplicate_email(client):
@@ -104,7 +112,7 @@ def test_update_mechanic(client):
     update_data = {
         "name": "Janet Wrench",
         "email": "jane@fixit.com",
-        "phone": "555-5678",
+        "phone": "555-567-8901",
         "salary": 65000,
     }
     response = client.put(f"/mechanics/{mechanic_id}", json=update_data)
@@ -134,7 +142,7 @@ def test_update_mechanic_duplicate_email(client):
     update_data = {
         "name": "Updated Mechanic",
         "email": res2.json["email"],  # Use the email of the second mechanic
-        "phone": "555-9999",
+        "phone": "555-999-9999",
         "salary": 70000,
     }
     response = client.put(f"/mechanics/{mechanic_id}", json=update_data)
@@ -175,7 +183,7 @@ def test_mechanic_usage_in_service_tickets(client):
         json={
             "name": "Tech Bob",
             "email": unique_email,
-            "phone": "555-5678",
+            "phone": "555-567-8901",
             "salary": 60000,  # Assuming salary is required
         },
     )
@@ -190,7 +198,7 @@ def test_mechanic_usage_in_service_tickets(client):
         json={
             "name": "Customer Rick",
             "email": "rick@driver.com",
-            "phone": "555-1111",
+            "phone": "555-111-1111",
             "password": "pass123",
         },
     )
