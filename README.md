@@ -15,9 +15,10 @@
 
 ## Author
 
-**Jen Planque**  
+**Jen Kauppila**  
 _Software Development Graduate | Backend Specialization_  
-GitHub: [@jenplanque](https://github.com/jenplanque)
+- GitHub: [@jenkauppila](https://github.com/jenkauppila)
+- LinkedIn: [linkedin.com/in/jenkauppila](https://www.linkedin.com/in/jenkauppila)
 
 ---
 
@@ -479,4 +480,4 @@ From initial Flask routes to production deployment with automated testing - this
 
 ---
 
-_Built with ❤️ and ☕ by Jen Planque | Final Capstone Project 2025_
+_Built with ❤️ and ☕ by Jen Kauppila | Final Capstone Project 2025_
