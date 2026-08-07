@@ -235,3 +235,37 @@ def test_delete_ticket(client):
 def test_delete_ticket_not_found(client):
     res = client.delete("/service_tickets/9999")
     assert res.status_code == 404
+
+
+def test_delete_ticket_blocked_by_mechanic(client):
+    customer_id, _ = create_customer(client)
+    ticket_res = client.post("/service_tickets/", json=create_ticket(customer_id))
+    ticket_id = ticket_res.json["id"]
+
+    mechanic_id = create_mechanic(client)
+
+    client.put(
+        f"/service_tickets/{ticket_id}/edit",
+        json={"add_mechanic_ids": [mechanic_id]},
+    )
+
+    del_res = client.delete(f"/service_tickets/{ticket_id}")
+    assert del_res.status_code == 400
+    assert "mechanic" in del_res.json["error"].lower()
+
+
+def test_delete_ticket_blocked_by_inventory(client):
+    customer_id, _ = create_customer(client)
+    ticket_res = client.post("/service_tickets/", json=create_ticket(customer_id))
+    ticket_id = ticket_res.json["id"]
+
+    item_id = create_inventory_item(client)
+
+    client.put(
+        f"/service_tickets/{ticket_id}/edit",
+        json={"add_item_ids": [item_id]},
+    )
+
+    del_res = client.delete(f"/service_tickets/{ticket_id}")
+    assert del_res.status_code == 400
+    assert "inventory" in del_res.json["error"].lower()

@@ -168,19 +168,24 @@ def delete_service_ticket(service_ticket_id):
     if not service_ticket:
         return jsonify({"error": "Service Ticket not found"}), 404
 
-    # Check if any mechanics are still assigned
+    blockers = []
+
     if service_ticket.mechanics and len(service_ticket.mechanics) > 0:
         mechanic_ids = [mechanic.id for mechanic in service_ticket.mechanics]
-        return (
-            jsonify({"error": f"mechanic(s) {mechanic_ids} still assigned to ticket"}),
-            400,
-        )
+        blockers.append(f"mechanic(s) {mechanic_ids} still assigned to ticket")
+
+    if service_ticket.inventory_items and len(service_ticket.inventory_items) > 0:
+        item_ids = [item.id for item in service_ticket.inventory_items]
+        blockers.append(f"inventory item(s) {item_ids} still assigned to ticket")
+
+    if blockers:
+        return jsonify({"error": "; ".join(blockers)}), 400
 
     db.session.delete(service_ticket)
     db.session.commit()
     return (
         jsonify(
-            {f"message": f"Service Ticket #{service_ticket_id} deleted successfully"}
+            {"message": f"Service Ticket #{service_ticket_id} deleted successfully"}
         ),
         200,
     )
