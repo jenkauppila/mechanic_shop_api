@@ -1,6 +1,6 @@
 from app.extensions import ma
 from app.models import Mechanic
-from marshmallow import fields
+from marshmallow import fields, validate
 
 
 class MechanicSchema(ma.SQLAlchemyAutoSchema):
@@ -11,7 +11,13 @@ class MechanicSchema(ma.SQLAlchemyAutoSchema):
     # Explicitly define required fields
     name = fields.String(required=True)
     email = fields.Email(required=True)
-    phone = fields.String(required=True)
+    phone = fields.String(
+        required=True,
+        validate=validate.Regexp(
+            r'^(\+1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$',
+            error="Phone number must be a valid 10-digit US phone number"
+        )
+    )
     salary = fields.Float(required=True)
 
 
