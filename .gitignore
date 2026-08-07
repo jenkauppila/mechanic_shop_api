@@ -5,3 +5,4 @@
 .env
 .DS_Store
 __pycache__**/.DS_Store
+dev.db
