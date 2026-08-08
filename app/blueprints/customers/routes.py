@@ -6,6 +6,7 @@ from app.models import db, Customer
 from app.extensions import limiter, cache
 from . import customers_bp
 from app.utils.util import encode_token, token_required
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 # CUSTOMER LOGIN
@@ -23,7 +24,7 @@ def login_customer():
         db.session.execute(query).scalars().first()
     )  # query cust table for cust with this email
 
-    if customer and customer.password == password:
+    if customer and check_password_hash(customer.password, password):
         auth_token = encode_token(customer.id)  # Encode the token with customer ID
 
         response = {
@@ -51,6 +52,7 @@ def create_customer():
     if existing_customer:
         return jsonify({"error": "Email already exists"}), 400
 
+    customer_data["password"] = generate_password_hash(customer_data["password"])
     new_customer = Customer(**customer_data)
     db.session.add(new_customer)
     db.session.commit()
@@ -95,6 +97,9 @@ def update_customer(customer_id):
         existing_customer = db.session.execute(query).scalars().first()
         if existing_customer:
             return jsonify({"error": "Email already exists"}), 400
+
+    if "password" in customer_data:
+        customer_data["password"] = generate_password_hash(customer_data["password"])
 
     for key, value in customer_data.items():
         setattr(customer, key, value)
