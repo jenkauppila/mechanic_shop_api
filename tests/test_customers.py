@@ -83,6 +83,30 @@ def test_customer_login_failure(client):
     assert "invalid" in response.json.get("error", "").lower()
 
 
+def test_customer_login_wrong_password(client):
+    client.post("/customers/", json=create_test_customer())
+    credentials = {"email": "jd@customer.com", "password": "wrongpassword"}
+    response = client.post("/customers/login", json=credentials)
+    assert response.status_code == 401
+    assert "invalid" in response.json.get("error", "").lower()
+
+
+def test_password_is_hashed(client):
+    customer_data = {
+        "name": "Hash Test",
+        "email": "hashtest@example.com",
+        "phone": "555-123-4567",
+        "password": "plaintextpass123",
+    }
+    res = client.post("/customers/", json=customer_data)
+    assert res.status_code == 201
+
+    from app.models import db, Customer
+    customer = db.session.get(Customer, res.json["id"])
+    assert customer.password != "plaintextpass123"
+    assert customer.password.startswith("scrypt:") or customer.password.startswith("pbkdf2:")
+
+
 # GET/SEARCH CUSTOMER TESTS
 def test_get_all_customers(client):
     client.post("/customers/", json=create_test_customer())
