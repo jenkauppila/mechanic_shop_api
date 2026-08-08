@@ -5,7 +5,7 @@ from marshmallow import fields
 
 class ServiceTicketSchema(ma.SQLAlchemyAutoSchema):
     customer_id = fields.Integer(required=True)
-    VIN = fields.String(required=True)
+    vehicle_id = fields.Integer(required=True)
     service_desc = fields.String(required=True)
     service_date = fields.Date(required=True)
 
@@ -15,7 +15,7 @@ class ServiceTicketSchema(ma.SQLAlchemyAutoSchema):
         load_instance = True
         fields = (
             "id",
-            "VIN",
+            "vehicle_id",
             "service_date",
             "service_desc",
             "customer_id",

@@ -10,6 +10,7 @@ from .blueprints.service_tickets import (
 from .blueprints.inventory import (
     inventory_items_bp,
 )  # Import the inventory items blueprint
+from .blueprints.vehicles import vehicles_bp  # Import the vehicles blueprint
 from flask_swagger_ui import get_swaggerui_blueprint  # Import swagger ui blueprint
 
 SWAGGER_URL = "/api/docs"  # URL for exposing Swagger UI (without trailing '/')
@@ -62,6 +63,7 @@ def create_app(config_name):
                 "mechanics": "/mechanics",
                 "service_tickets": "/service_tickets",
                 "inventory": "/inventory",
+                "vehicles": "/vehicles",
             },
         }
 
@@ -83,6 +85,7 @@ def create_app(config_name):
     app.register_blueprint(mechanics_bp, url_prefix="/mechanics")
     app.register_blueprint(service_tickets_bp, url_prefix="/service_tickets")
     app.register_blueprint(inventory_items_bp, url_prefix="/inventory")
+    app.register_blueprint(vehicles_bp, url_prefix="/vehicles")
     app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
 
     return app
