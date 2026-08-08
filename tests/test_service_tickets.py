@@ -62,10 +62,26 @@ def create_inventory_item(client):
     return response.json["id"]
 
 
+# HELPER TO CREATE VEHICLE
+def create_vehicle(client, customer_id):
+    response = client.post(
+        "/vehicles/",
+        json={
+            "VIN": f"1HGCM82633A{uuid.uuid4().hex[:6].upper()}",
+            "make": "Honda",
+            "model": "Accord",
+            "year": 2020,
+            "customer_id": customer_id,
+        },
+    )
+    assert response.status_code == 201
+    return response.json["id"]
+
+
 # HELPER TO CREATE SERVICE TICKET
-def create_ticket(customer_id):
+def create_ticket(customer_id, vehicle_id):
     return {
-        "VIN": "1HGCM82633A123456",
+        "vehicle_id": vehicle_id,
         "service_desc": "Oil change",
         "service_date": "2025-07-15",
         "customer_id": customer_id,
@@ -75,15 +91,19 @@ def create_ticket(customer_id):
 # ADD SERVICE TICKET
 def test_create_ticket(client):
     customer_id, _ = create_customer(client)
-    response = client.post("/service_tickets/", json=create_ticket(customer_id))
+    vehicle_id = create_vehicle(client, customer_id)
+    response = client.post(
+        "/service_tickets/", json=create_ticket(customer_id, vehicle_id)
+    )
     assert response.status_code == 201
     assert "id" in response.json
 
 
 def test_create_ticket_missing_fields(client):
     customer_id, _ = create_customer(client)
-    data = create_ticket(customer_id)
-    for key in ["VIN", "service_desc", "service_date", "customer_id"]:
+    vehicle_id = create_vehicle(client, customer_id)
+    data = create_ticket(customer_id, vehicle_id)
+    for key in ["vehicle_id", "service_desc", "service_date", "customer_id"]:
         payload = dict(data)
         payload.pop(key)
         res = client.post("/service_tickets/", json=payload)
@@ -91,7 +111,7 @@ def test_create_ticket_missing_fields(client):
 
 
 def test_create_ticket_invalid_customer(client):
-    data = create_ticket(9999)  # Invalid ID
+    data = create_ticket(9999, 9999)  # Invalid customer and vehicle IDs
     res = client.post("/service_tickets/", json=data)
     assert res.status_code == 404
 
@@ -105,7 +125,8 @@ def test_get_all_tickets_empty(client):
 
 def test_get_all_tickets(client):
     customer_id, _ = create_customer(client)
-    client.post("/service_tickets/", json=create_ticket(customer_id))
+    vehicle_id = create_vehicle(client, customer_id)
+    client.post("/service_tickets/", json=create_ticket(customer_id, vehicle_id))
     res = client.get("/service_tickets/")
     assert res.status_code == 200
     assert isinstance(res.json, list)
@@ -113,7 +134,8 @@ def test_get_all_tickets(client):
 
 def test_get_ticket_by_id(client):
     customer_id, _ = create_customer(client)
-    res = client.post("/service_tickets/", json=create_ticket(customer_id))
+    vehicle_id = create_vehicle(client, customer_id)
+    res = client.post("/service_tickets/", json=create_ticket(customer_id, vehicle_id))
     ticket_id = res.json["id"]
     response = client.get(f"/service_tickets/{ticket_id}")
     assert response.status_code == 200
@@ -127,12 +149,13 @@ def test_get_ticket_invalid_id(client):
 
 def test_get_my_tickets_with_token(client):
     customer_id, email = create_customer(client)
+    vehicle_id = create_vehicle(client, customer_id)
     login = client.post(
         "/customers/login", json={"email": email, "password": "securepassword"}
     )
     token = login.json.get("auth_token")
     assert token
-    client.post("/service_tickets/", json=create_ticket(customer_id))
+    client.post("/service_tickets/", json=create_ticket(customer_id, vehicle_id))
     res = client.get(
         "/service_tickets/my-tickets", headers={"Authorization": f"Bearer {token}"}
     )
@@ -165,7 +188,8 @@ def test_get_my_tickets_invalid_token(client):
 # UPDATE SERVICE TICKET - ADD/REMOVE MECHANICS AND INVENTORY
 def test_update_ticket_combined_mechanics_inventory(client):
     customer_id, _ = create_customer(client)
-    ticket_data = create_ticket(customer_id)
+    vehicle_id = create_vehicle(client, customer_id)
+    ticket_data = create_ticket(customer_id, vehicle_id)
     res = client.post("/service_tickets/", json=ticket_data)
     ticket_id = res.json["id"]
 
@@ -190,7 +214,8 @@ def test_update_ticket_combined_mechanics_inventory(client):
 
 def test_update_ticket_combined_invalid_ids(client):
     customer_id, _ = create_customer(client)
-    ticket_data = create_ticket(customer_id)
+    vehicle_id = create_vehicle(client, customer_id)
+    ticket_data = create_ticket(customer_id, vehicle_id)
     res = client.post("/service_tickets/", json=ticket_data)
     ticket_id = res.json["id"]
 
@@ -225,7 +250,8 @@ def test_update_ticket_combined_invalid_ticket(client):
 # DELETE SERVICE TICKET
 def test_delete_ticket(client):
     customer_id, _ = create_customer(client)
-    res = client.post("/service_tickets/", json=create_ticket(customer_id))
+    vehicle_id = create_vehicle(client, customer_id)
+    res = client.post("/service_tickets/", json=create_ticket(customer_id, vehicle_id))
     ticket_id = res.json["id"]
     del_res = client.delete(f"/service_tickets/{ticket_id}")
     assert del_res.status_code == 200
@@ -239,7 +265,10 @@ def test_delete_ticket_not_found(client):
 
 def test_delete_ticket_blocked_by_mechanic(client):
     customer_id, _ = create_customer(client)
-    ticket_res = client.post("/service_tickets/", json=create_ticket(customer_id))
+    vehicle_id = create_vehicle(client, customer_id)
+    ticket_res = client.post(
+        "/service_tickets/", json=create_ticket(customer_id, vehicle_id)
+    )
     ticket_id = ticket_res.json["id"]
 
     mechanic_id = create_mechanic(client)
@@ -256,7 +285,10 @@ def test_delete_ticket_blocked_by_mechanic(client):
 
 def test_delete_ticket_blocked_by_inventory(client):
     customer_id, _ = create_customer(client)
-    ticket_res = client.post("/service_tickets/", json=create_ticket(customer_id))
+    vehicle_id = create_vehicle(client, customer_id)
+    ticket_res = client.post(
+        "/service_tickets/", json=create_ticket(customer_id, vehicle_id)
+    )
     ticket_id = ticket_res.json["id"]
 
     item_id = create_inventory_item(client)

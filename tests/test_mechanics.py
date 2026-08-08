@@ -206,9 +206,23 @@ def test_mechanic_usage_in_service_tickets(client):
     assert cust_res.status_code == 201
     customer_id = cust_res.json["id"]
 
+    # CREATE VEHICLE
+    vehicle_res = client.post(
+        "/vehicles/",
+        json={
+            "VIN": f"1HGCM82633A{uuid.uuid4().hex[:6].upper()}",
+            "make": "Honda",
+            "model": "Accord",
+            "year": 2020,
+            "customer_id": customer_id,
+        },
+    )
+    assert vehicle_res.status_code == 201
+    vehicle_id = vehicle_res.json["id"]
+
     # CREATE SERVICE TICKET
     ticket_data = {
-        "VIN": "XYZ1234",
+        "vehicle_id": vehicle_id,
         "service_desc": "Brake replacement",
         "service_date": "2025-07-15",
         "customer_id": customer_id,

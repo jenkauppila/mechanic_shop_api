@@ -43,11 +43,28 @@ class Customer(Base):
     )  # removes associated service tickets when a customer is deleted
 
 
+class Vehicle(Base):
+    __tablename__ = "vehicles"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    VIN: Mapped[str] = mapped_column(db.String(17), nullable=False, unique=True)
+    make: Mapped[str] = mapped_column(db.String(50), nullable=False)
+    model: Mapped[str] = mapped_column(db.String(50), nullable=False)
+    year: Mapped[int] = mapped_column(db.Integer, nullable=False)
+    customer_id: Mapped[int] = mapped_column(
+        db.ForeignKey("customers.id"), nullable=False
+    )
+
+    customer: Mapped["Customer"] = db.relationship("Customer", backref="vehicles")
+
+
 class ServiceTicket(Base):
     __tablename__ = "service_tickets"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    VIN: Mapped[str] = mapped_column(db.String(17), nullable=False)
+    vehicle_id: Mapped[int] = mapped_column(
+        db.ForeignKey("vehicles.id"), nullable=False
+    )
     service_date: Mapped[date] = mapped_column(db.Date)
     service_desc: Mapped[str] = mapped_column(db.String(500), nullable=False)
     customer_id: Mapped[int] = mapped_column(db.ForeignKey("customers.id"))
@@ -55,6 +72,7 @@ class ServiceTicket(Base):
     customer: Mapped["Customer"] = db.relationship(
         "Customer", back_populates="service_tickets"
     )
+    vehicle: Mapped["Vehicle"] = db.relationship("Vehicle", backref="service_tickets")
     mechanics: Mapped[List["Mechanic"]] = db.relationship(
         "Mechanic", secondary=service_mechanics, back_populates="service_tickets"
     )

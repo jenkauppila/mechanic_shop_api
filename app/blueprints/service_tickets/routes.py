@@ -7,7 +7,7 @@ from .schemas import (
 from flask import request, jsonify
 from marshmallow import ValidationError
 from sqlalchemy import select
-from app.models import db, ServiceTicket, Customer, Mechanic, InventoryItem
+from app.models import db, ServiceTicket, Customer, Mechanic, InventoryItem, Vehicle
 from app.utils.util import token_required
 
 # from app.extensions import limiter, cache
@@ -27,7 +27,7 @@ def create_service_ticket():
 
     # Access model attributes
     customer_id = validated_data.customer_id
-    VIN = validated_data.VIN
+    vehicle_id = validated_data.vehicle_id
     service_date = validated_data.service_date
     service_desc = validated_data.service_desc
 
@@ -36,9 +36,14 @@ def create_service_ticket():
     if not customer:
         return jsonify({"error": "Customer not found"}), 404
 
+    # Check for valid vehicle
+    vehicle = db.session.get(Vehicle, vehicle_id)
+    if not vehicle:
+        return jsonify({"error": "Vehicle not found"}), 404
+
     # Create and save new ticket
     new_ticket = ServiceTicket(
-        VIN=VIN,
+        vehicle_id=vehicle_id,
         service_date=service_date,
         service_desc=service_desc,
         customer_id=customer_id,
