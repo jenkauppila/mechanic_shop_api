@@ -20,13 +20,8 @@ service_mechanics = db.Table(
     db.Column("mechanic_id", db.ForeignKey("mechanics.id")),
 )
 
-service_inventory = db.Table(
-    "service_inventory",
-    Base.metadata,
-    # db.Model.metadata,
-    db.Column("service_id", db.ForeignKey("service_tickets.id")),
-    db.Column("item_id", db.ForeignKey("inventory_items.id")),
-)
+# service_inventory needs a quantity column, so it's a proper association
+# object model instead of a plain secondary Table (which can't hold extra columns).
 
 
 class Customer(Base):
@@ -77,8 +72,10 @@ class ServiceTicket(Base):
         "Mechanic", secondary=service_mechanics, back_populates="service_tickets"
     )
 
-    inventory_items: Mapped[List["InventoryItem"]] = db.relationship(
-        "InventoryItem", secondary=service_inventory, back_populates="service_tickets"
+    inventory_entries: Mapped[List["ServiceInventory"]] = db.relationship(
+        "ServiceInventory",
+        back_populates="service_ticket",
+        cascade="all, delete-orphan",
     )
 
 
@@ -105,7 +102,27 @@ class InventoryItem(Base):
     # price: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
     # item_desc: Mapped[str] = mapped_column(db.String(500), nullable=False)
 
-    # Define association table for InventoryItem and ServiceTicket
-    service_tickets: Mapped[List["ServiceTicket"]] = db.relationship(
-        "ServiceTicket", secondary=service_inventory, back_populates="inventory_items"
+    service_entries: Mapped[List["ServiceInventory"]] = db.relationship(
+        "ServiceInventory", back_populates="item"
+    )
+
+
+class ServiceInventory(Base):
+    """Association object linking a ServiceTicket to an InventoryItem, with quantity used."""
+
+    __tablename__ = "service_inventory"
+
+    service_id: Mapped[int] = mapped_column(
+        db.ForeignKey("service_tickets.id"), primary_key=True
+    )
+    item_id: Mapped[int] = mapped_column(
+        db.ForeignKey("inventory_items.id"), primary_key=True
+    )
+    quantity: Mapped[int] = mapped_column(db.Integer, nullable=False, default=1)
+
+    service_ticket: Mapped["ServiceTicket"] = db.relationship(
+        "ServiceTicket", back_populates="inventory_entries"
+    )
+    item: Mapped["InventoryItem"] = db.relationship(
+        "InventoryItem", back_populates="service_entries"
     )

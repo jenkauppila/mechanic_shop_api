@@ -796,7 +796,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"add_mechanic_ids\": [4],\n    \"remove_mechanic_ids\": [],\n    \"add_item_ids\": [],\n    \"remove_item_ids\": []\n}",
+							"raw": "{\n    \"add_mechanic_ids\": [4],\n    \"remove_mechanic_ids\": [],\n    \"add_item_ids\": [\n        {\n            \"item_id\": 1,\n            \"quantity\": 2\n        }\n    ],\n    \"remove_item_ids\": []\n}",
 							"options": {
 								"raw": {
 									"language": "json"
