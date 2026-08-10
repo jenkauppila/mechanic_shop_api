@@ -7,7 +7,15 @@ from .schemas import (
 from flask import request, jsonify
 from marshmallow import ValidationError
 from sqlalchemy import select
-from app.models import db, ServiceTicket, Customer, Mechanic, InventoryItem, Vehicle
+from app.models import (
+    db,
+    ServiceTicket,
+    Customer,
+    Mechanic,
+    InventoryItem,
+    Vehicle,
+    ServiceInventory,
+)
 from app.utils.util import token_required
 
 # from app.extensions import limiter, cache
@@ -130,26 +138,36 @@ def edit_service_ticket(service_ticket_id):
             service_ticket.mechanics.remove(mechanic)
 
     # Add Inventory Items
-    for item_id in service_ticket_edits.get("add_item_ids", []):
+    for entry in service_ticket_edits.get("add_item_ids", []):
+        item_id = entry["item_id"]
+        quantity = entry.get("quantity", 1)
         item = db.session.get(InventoryItem, item_id)
+        existing_entry = next(
+            (e for e in service_ticket.inventory_entries if e.item_id == item_id), None
+        )
         if not item:
             errors.append(f"Inventory item ID '{item_id}' not found in system")
-        elif item in service_ticket.inventory_items:
+        elif existing_entry:
             errors.append(
                 f"Inventory item '{item.name}' already assigned to this ticket"
             )
         else:
-            service_ticket.inventory_items.append(item)
+            service_ticket.inventory_entries.append(
+                ServiceInventory(item_id=item_id, quantity=quantity)
+            )
 
     # Remove Inventory Items
     for item_id in service_ticket_edits.get("remove_item_ids", []):
         item = db.session.get(InventoryItem, item_id)
+        existing_entry = next(
+            (e for e in service_ticket.inventory_entries if e.item_id == item_id), None
+        )
         if not item:
             errors.append(f"Inventory item ID '{item_id}' not found in system")
-        elif item not in service_ticket.inventory_items:
+        elif not existing_entry:
             errors.append(f"Inventory item '{item.name}' not assigned to this ticket")
         else:
-            service_ticket.inventory_items.remove(item)
+            service_ticket.inventory_entries.remove(existing_entry)
 
     db.session.commit()
 
@@ -179,8 +197,8 @@ def delete_service_ticket(service_ticket_id):
         mechanic_ids = [mechanic.id for mechanic in service_ticket.mechanics]
         blockers.append(f"mechanic(s) {mechanic_ids} still assigned to ticket")
 
-    if service_ticket.inventory_items and len(service_ticket.inventory_items) > 0:
-        item_ids = [item.id for item in service_ticket.inventory_items]
+    if service_ticket.inventory_entries and len(service_ticket.inventory_entries) > 0:
+        item_ids = [entry.item_id for entry in service_ticket.inventory_entries]
         blockers.append(f"inventory item(s) {item_ids} still assigned to ticket")
 
     if blockers:

@@ -199,7 +199,7 @@ def test_update_ticket_combined_mechanics_inventory(client):
     update_data = {
         "add_mechanic_ids": [mechanic_id],
         "remove_mechanic_ids": [],
-        "add_item_ids": [item_id],
+        "add_item_ids": [{"item_id": item_id, "quantity": 3}],
         "remove_item_ids": [],
     }
 
@@ -212,6 +212,32 @@ def test_update_ticket_combined_mechanics_inventory(client):
     assert item_id in [i["id"] for i in response["inventory_items"]]
 
 
+def test_update_ticket_add_item_with_quantity(client):
+    customer_id, _ = create_customer(client)
+    vehicle_id = create_vehicle(client, customer_id)
+    ticket_data = create_ticket(customer_id, vehicle_id)
+    res = client.post("/service_tickets/", json=ticket_data)
+    ticket_id = res.json["id"]
+
+    item_id = create_inventory_item(client)
+
+    update_data = {"add_item_ids": [{"item_id": item_id, "quantity": 4}]}
+    update_res = client.put(f"/service_tickets/{ticket_id}/edit", json=update_data)
+    assert update_res.status_code == 200
+    response = update_res.json["service_ticket"]
+
+    added_item = next(i for i in response["inventory_items"] if i["id"] == item_id)
+    assert added_item["quantity"] == 4
+
+    # Confirm the quantity is also reflected on a fresh GET, not just the edit response
+    get_res = client.get(f"/service_tickets/{ticket_id}")
+    assert get_res.status_code == 200
+    fetched_item = next(
+        i for i in get_res.json["inventory_items"] if i["id"] == item_id
+    )
+    assert fetched_item["quantity"] == 4
+
+
 def test_update_ticket_combined_invalid_ids(client):
     customer_id, _ = create_customer(client)
     vehicle_id = create_vehicle(client, customer_id)
@@ -222,7 +248,7 @@ def test_update_ticket_combined_invalid_ids(client):
     update_data = {
         "add_mechanic_ids": [9999],  # invalid mechanic
         "remove_mechanic_ids": [],
-        "add_item_ids": [8888],  # invalid inventory item
+        "add_item_ids": [{"item_id": 8888, "quantity": 1}],  # invalid inventory item
         "remove_item_ids": [],
     }
 
@@ -239,7 +265,7 @@ def test_update_ticket_combined_invalid_ticket(client):
     update_data = {
         "add_mechanic_ids": [mechanic_id],
         "remove_mechanic_ids": [],
-        "add_item_ids": [item_id],
+        "add_item_ids": [{"item_id": item_id, "quantity": 1}],
         "remove_item_ids": [],
     }
     res = client.put("/service_tickets/9999/edit", json=update_data)
@@ -293,9 +319,10 @@ def test_delete_ticket_blocked_by_inventory(client):
 
     item_id = create_inventory_item(client)
 
+    # No quantity specified - should default to 1 and still block deletion
     client.put(
         f"/service_tickets/{ticket_id}/edit",
-        json={"add_item_ids": [item_id]},
+        json={"add_item_ids": [{"item_id": item_id}]},
     )
 
     del_res = client.delete(f"/service_tickets/{ticket_id}")

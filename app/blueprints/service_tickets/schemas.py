@@ -3,6 +3,17 @@ from app.models import ServiceTicket
 from marshmallow import fields
 
 
+# Flattened view of a ServiceInventory association: item details + quantity used
+class InventoryEntrySchema(ma.Schema):
+    id = fields.Integer(attribute="item.id")
+    name = fields.String(attribute="item.name")
+    price = fields.Float(attribute="item.price")
+    quantity = fields.Integer()
+
+    class Meta:
+        fields = ("id", "name", "price", "quantity")
+
+
 class ServiceTicketSchema(ma.SQLAlchemyAutoSchema):
     customer_id = fields.Integer(required=True)
     vehicle_id = fields.Integer(required=True)
@@ -25,15 +36,26 @@ class ServiceTicketSchema(ma.SQLAlchemyAutoSchema):
 
     mechanics = fields.Nested("MechanicSchema", only=("id", "name"), many=True)
     inventory_items = fields.Nested(
-        "InventoryItemSchema", only=("id", "name", "price"), many=True
+        InventoryEntrySchema, many=True, attribute="inventory_entries"
     )
     customer = fields.Nested("CustomerSchema", only=("id", "name", "email", "phone"))
+
+
+# Item + quantity pair used when adding an item to a ticket via add_item_ids
+class AddItemEntrySchema(ma.Schema):
+    item_id = fields.Integer(required=True)
+    quantity = fields.Integer(required=False, load_default=1)
+
+    class Meta:
+        fields = ("item_id", "quantity")
 
 
 class EditServiceTicketSchema(ma.Schema):
     add_mechanic_ids = fields.List(fields.Int(), required=False, load_default=[])
     remove_mechanic_ids = fields.List(fields.Int(), required=False, load_default=[])
-    add_item_ids = fields.List(fields.Int(), required=False, load_default=[])
+    add_item_ids = fields.List(
+        fields.Nested(AddItemEntrySchema), required=False, load_default=[]
+    )
     remove_item_ids = fields.List(fields.Int(), required=False, load_default=[])
 
     class Meta:
