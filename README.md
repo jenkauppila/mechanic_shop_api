@@ -16,7 +16,8 @@
 ## Author
 
 **Jen Kauppila**  
-_Software Development Graduate | Backend Specialization_  
+_Software Development Graduate | Backend Specialization_
+
 - GitHub: [@jenkauppila](https://github.com/jenkauppila)
 - LinkedIn: [linkedin.com/in/jenkauppila](https://www.linkedin.com/in/jenkauppila)
 
@@ -474,10 +475,25 @@ From initial Flask routes to production deployment with automated testing - this
 
 ---
 
-**🔗 Repository**: [https://github.com/jenplanque/mechanic_shop_api](https://github.com/jenplanque/mechanic_shop_api)  
+**🔗 Repository**: [https://github.com/jenkauppila/mechanic_shop_api](https://github.com/jenkauppila/mechanic_shop_api)  
 **🌐 Live API**: [https://mechanic-shop-api-1-ezx9.onrender.com](https://mechanic-shop-api-1-ezx9.onrender.com)  
 **📚 Documentation**: [https://mechanic-shop-api-1-ezx9.onrender.com/api/docs](https://mechanic-shop-api-1-ezx9.onrender.com/api/docs)
 
 ---
+
+## Future Enhancements
+
+These are scoped ideas, not committed roadmap items:
+
+- **Inventory stock tracking**: track quantity in stock per item,
+  automatically decrement/increment as items are added to or removed
+  from tickets, and block adding an item if requested quantity exceeds
+  available stock. Would require adding a ticket status field (open/
+  closed) to define what "committed to an open ticket" means.
+- **Reporting endpoints**: current inventory levels across all items,
+  which items are committed to open tickets and how many, ticket count
+  per mechanic.
+
+  ***
 
 _Built with ❤️ and ☕ by Jen Kauppila | Final Capstone Project 2025_
