@@ -1,0 +1,26 @@
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    - cron: '0 12 * * 1,4'
+  workflow_dispatch:
+
+jobs:
+  ping-health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping health endpoint
+        run: |
+          response=$(curl -s -w "\n%{http_code}" https://mechanic-shop-api-1-ezx9.onrender.com/health)
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+          echo "HTTP status: $http_code"
+          echo "Response body: $body"
+          if [ "$http_code" -ne 200 ]; then
+            echo "Health check failed with status $http_code"
+            exit 1
+          fi
+          if ! echo "$body" | grep -q '"status":"healthy"'; then
+            echo "Health check response did not report healthy status"
+            exit 1
+          fi
