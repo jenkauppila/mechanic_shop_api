@@ -22,11 +22,7 @@ class TestingConfig:
 
 # Helper function to process database URL
 def get_database_uri():
-    database_url = (
-        os.environ.get("SQLALCHEMY_DATABASE_URI")
-        or os.environ.get("DATABASE_URL")
-        or "sqlite:///production.db"  # Fallback for local testing
-    )
+    database_url = os.environ.get("DATABASE_URL") or "sqlite:///production.db"  # Fallback for local testing
     # Fix postgres:// scheme to postgresql+pg8000:// for SQLAlchemy compatibility with pg8000
     if database_url and database_url.startswith("postgres://"):
         database_url = database_url.replace("postgres://", "postgresql+pg8000://", 1)
