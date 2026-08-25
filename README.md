@@ -67,7 +67,7 @@ As someone with ADHD, I pivoted from the built-in [unittest](https://docs.python
 | Language        | Python 3.11                                |
 | Framework       | Flask 3.1.1                                |
 | ORM             | Flask-SQLAlchemy 3.1.1, SQLAlchemy 2.0.41  |
-| Database        | PostgreSQL (Production), SQLite (Dev/Test) |
+| Database        | PostgreSQL via Supabase (Production), SQLite (Dev/Test) |
 | Adapter         | pg8000 1.31.2                              |
 | Auth & Security | JWT (python-jose), Werkzeug, Flask-Limiter |
 | Caching         | Flask-Caching, Redis 6.2.0                 |
@@ -275,7 +275,7 @@ The API is fully documented using **Swagger/OpenAPI 2.0** specification. Each en
 
 ## Testing
 
-The project includes comprehensive testing using **pytest** with 52 test cases covering:
+The project includes comprehensive testing using **pytest** with 64 test cases covering:
 
 #### Test Coverage:
 
@@ -326,14 +326,14 @@ The API is deployed on **Render** with the following configuration:
 
 #### 1. Database Setup
 
-- PostgreSQL database hosted on Render
-- Automatic `DATABASE_URL` environment variable
-- Connection pooling for optimal performance
+- PostgreSQL database hosted on **Supabase**
+- Connects via Supabase's transaction pooler (port 6543) for compatibility with Render's serverless-style connections
+- `DATABASE_URL` set manually as a Render environment variable, pointing at the Supabase connection string
 
 #### 2. Environment Variables
 
 ```env
-DATABASE_URL=postgresql://...  # Automatically provided by Render
+DATABASE_URL=postgresql://...pooler.supabase.com:6543/postgres  # Supabase transaction pooler connection string
 SECRET_KEY=production-secret-key
 FLASK_ENV=production
 ```
@@ -388,7 +388,7 @@ The project includes a comprehensive [CI/CD pipeline](github/workflows/main.yaml
 #### 3. **Pipeline Features**
 
 - **Trigger**: Automatic on push to `main` branch
-- **Testing**: All 52 tests must pass before deployment
+- **Testing**: All 64 tests must pass before deployment
 - **Security**: Encrypted secrets for deployment credentials
 - **Reliability**: Deployment only occurs after successful testing
 
