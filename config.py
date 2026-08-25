@@ -1,4 +1,12 @@
 import os
+import re
+
+
+def mask_database_uri(database_uri):
+    """Mask the password in a database URI, e.g. for safe logging."""
+    if not database_uri:
+        return database_uri
+    return re.sub(r"(://[^:/@]+:)[^@]+(@)", r"\1****\2", database_uri)
 
 
 class DevelopmentConfig:
