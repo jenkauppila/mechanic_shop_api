@@ -37,9 +37,10 @@ _Software Development Graduate | Backend Specialization_
 10. [Testing](#testing)
 11. [Deployment](#deployment)
 12. [CI/CD Pipeline](#cicd-pipeline)
-13. [Screenshots](#screenshots)
-14. [Collaborators](#collaborators)
-15. [Acknowledgments](#acknowledgments)
+13. [Resolved Issues](#resolved-issues)
+14. [Screenshots](#screenshots)
+15. [Collaborators](#collaborators)
+16. [Acknowledgments](#acknowledgments)
 
 ---
 
@@ -101,18 +102,27 @@ As someone with ADHD, I pivoted from the built-in [unittest](https://docs.python
 - Search functionality for finding mechanics
 - Many-to-many relationships with service tickets
 
+### 🚗 **Vehicle Management**
+
+- Vehicles are a dedicated resource linked to a customer (make, model, year, VIN)
+- Unique VIN enforcement
+- CRUD operations for vehicles
+- Service tickets reference a vehicle via `vehicle_id`
+
 ### 🎫 **Service Ticket System**
 
 - Complete CRUD operations for service tickets
-- VIN-based vehicle tracking
+- Tickets are tied to a specific `Vehicle` record (not just a raw VIN string)
 - Dynamic mechanic assignment/removal
+- Inventory items (with quantity) can be added to or removed from a ticket
+- Deletion is blocked while any mechanics or inventory items are still assigned to the ticket
 - Customer-specific ticket retrieval with authentication
 - Status tracking and updates
 
 ### 📦 **Inventory Management**
 
 - Parts inventory with pricing
-- Many-to-many relationships with service tickets
+- Many-to-many relationship with service tickets, tracked via an association model that records **quantity used per ticket**
 - CRUD operations for inventory items
 - Inventory assignment to service tickets
 
@@ -144,7 +154,8 @@ Mechanic_Shop/
 │   │   ├── customers/             # Customer management endpoints
 │   │   ├── mechanics/             # Mechanic management endpoints
 │   │   ├── service_tickets/       # Service ticket operations
-│   │   └── inventory/             # Inventory management
+│   │   ├── inventory/             # Inventory management
+│   │   └── vehicles/              # Vehicle management endpoints
 │   ├── static/
 │   │   └── swagger.yaml           # API documentation
 │   ├── utils/
@@ -157,6 +168,7 @@ Mechanic_Shop/
 │   ├── test_mechanics.py
 │   ├── test_service_tickets.py
 │   ├── test_inventory.py
+│   ├── test_vehicles.py
 │   └── test_validation.py
 ├── instance/                     # Database files
 ├── config.py                     # Environment configurations
@@ -258,17 +270,21 @@ The API is fully documented using **Swagger/OpenAPI 2.0** specification. Each en
 
 ### Key Endpoints:
 
-| Resource        | Method | Endpoint                          | Description                           |
-| --------------- | ------ | --------------------------------- | ------------------------------------- |
-| Customers       | POST   | `/customers`                      | Register new customer                 |
-| Customers       | POST   | `/customers/login`                | Customer authentication               |
-| Customers       | GET    | `/customers/my-tickets`           | Get customer's service tickets (Auth) |
-| Mechanics       | GET    | `/mechanics`                      | List all mechanics                    |
-| Mechanics       | GET    | `/mechanics/usage`                | Mechanics ranked by tickets completed |
-| Service Tickets | GET    | `/service_tickets`                | List all service tickets              |
-| Service Tickets | PUT    | `/service_tickets/<id>/edit`      | Update mechanics on ticket            |
-| Inventory       | GET    | `/inventory`                      | List inventory items                  |
-| Inventory       | POST   | `/service_tickets/<id>/inventory` | Add parts to service ticket           |
+| Resource        | Method | Endpoint                          | Description                                        |
+| --------------- | ------ | --------------------------------- | --------------------------------------------------- |
+| Customers       | POST   | `/customers`                      | Register new customer                              |
+| Customers       | POST   | `/customers/login`                | Customer authentication                            |
+| Customers       | GET    | `/customers/my-tickets`           | Get customer's service tickets (Auth)              |
+| Vehicles        | POST   | `/vehicles`                       | Register a vehicle for a customer                  |
+| Vehicles        | GET    | `/vehicles`                       | List all vehicles                                  |
+| Mechanics       | GET    | `/mechanics`                      | List all mechanics                                 |
+| Mechanics       | GET    | `/mechanics/usage`                | Mechanics ranked by tickets completed               |
+| Service Tickets | GET    | `/service_tickets`                | List all service tickets                           |
+| Service Tickets | POST   | `/service_tickets`                | Create a ticket for a customer's vehicle           |
+| Service Tickets | PUT    | `/service_tickets/<id>/edit`      | Add/remove mechanics and inventory (with quantity) on a ticket |
+| Service Tickets | DELETE | `/service_tickets/<id>`           | Delete a ticket (blocked if mechanics/inventory are still assigned) |
+| Inventory       | GET    | `/inventory`                      | List inventory items                               |
+| Inventory       | POST   | `/inventory`                      | Add a new inventory item                           |
 
 ---
 
@@ -412,6 +428,21 @@ jobs:
   deploy: # Deploy to Render (only if tests pass)
     needs: test
 ```
+
+---
+
+## Resolved Issues
+
+Six issues filed against earlier versions of the API were tracked and closed on GitHub. Each one changed the schema, validation, or behavior described above:
+
+| Issue                                                              | What it added                                                                                                     |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| No Vehicle model exists                                            | Added a dedicated `Vehicle` model linked to `Customer`; service tickets now reference a vehicle via `vehicle_id` instead of a raw VIN string |
+| Inventory association table has no quantity field                 | Added a `quantity` column to the `service_inventory` association object so ticket line items track how many of each part were used |
+| Write test to check that deleting a service ticket does not release mechanics or inventory | Made ticket deletion consistently blocked (400 error) while mechanics **or** inventory items are still assigned, instead of silently releasing them |
+| Phone number format is not validated                               | Added regex-based phone validation to the customer and mechanic schemas (valid 10-digit US format)                |
+| Passwords are stored and compared in plaintext                     | Added password hashing and verification via Werkzeug (`generate_password_hash` / `check_password_hash`)            |
+| Local dev config uses MySQL, production uses Postgres              | Standardized `DevelopmentConfig` and `TestingConfig` on SQLite so local development and tests are fast and dependency-free, while `ProductionConfig` resolves `DATABASE_URL` to Postgres at runtime |
 
 ---
 
