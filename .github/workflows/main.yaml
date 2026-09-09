@@ -10,10 +10,10 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v5
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v6
         with:
           python-version: 3.12
 
@@ -23,7 +23,7 @@ jobs:
       - name: Install Dependencies
         run: |
           source venv/bin/activate
-          python -m pip install --upgrade pip 
+          python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
 
       - name: Print debugging information
@@ -45,10 +45,10 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v5
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v6
         with:
           python-version: 3.12
 
@@ -58,7 +58,7 @@ jobs:
       - name: Install Dependencies
         run: |
           source venv/bin/activate
-          python -m pip install --upgrade pip 
+          python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
 
       - name: Deploy to production
