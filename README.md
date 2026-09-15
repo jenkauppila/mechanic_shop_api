@@ -227,8 +227,6 @@ pip install -r requirements.txt
 Create a `.env` file in the root directory:
 
 ```env
-FLASK_APP=flask_app.py
-FLASK_ENV=development
 SECRET_KEY=your-secret-key-here
 DATABASE_URL=your-database-url (for production)
 ```
