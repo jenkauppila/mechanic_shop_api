@@ -1,6 +1,6 @@
 # 🧰 Mechanic Shop API
 
-[![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.9%2B-blue?logo=python)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Flask-2.x-black?logo=flask)](https://flask.palletsprojects.com/)
 [![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-ORM-red?logo=python)](https://www.sqlalchemy.org/)
 [![Swagger](https://img.shields.io/badge/Swagger-UI-green?logo=swagger)](https://swagger.io/tools/swagger-ui/)
@@ -38,7 +38,7 @@ _Software Development Graduate | Backend Specialization_
 11. [Deployment](#deployment)
 12. [CI/CD Pipeline](#cicd-pipeline)
 13. [Resolved Issues](#resolved-issues)
-14. [Screenshots](#screenshots)
+14. [Demo Data](#demo-data)
 15. [Collaborators](#collaborators)
 16. [Acknowledgments](#acknowledgments)
 
@@ -65,7 +65,7 @@ As someone with ADHD, I pivoted from the built-in [unittest](https://docs.python
 
 | Feature         | Technology / Tool                          |
 | --------------- | ------------------------------------------ |
-| Language        | Python 3.11                                |
+| Language        | Python 3.9+ (CI pinned to 3.12)            |
 | Framework       | Flask 3.1.1                                |
 | ORM             | Flask-SQLAlchemy 3.1.1, SQLAlchemy 2.0.41  |
 | Database        | PostgreSQL via Supabase (Production), SQLite (Dev/Test) |
@@ -148,7 +148,8 @@ As someone with ADHD, I pivoted from the built-in [unittest](https://docs.python
 Mechanic_Shop/
 ├── .github/
 │   └── workflows/
-│       └── main.yaml              # CI/CD pipeline configuration
+│       ├── main.yaml              # CI/CD: run tests, deploy to Render on push
+│       └── keep-alive.yml         # Scheduled ping to /health, keeps Supabase from auto-pausing
 ├── app/
 │   ├── blueprints/                # API route modules
 │   │   ├── customers/             # Customer management endpoints
@@ -157,10 +158,10 @@ Mechanic_Shop/
 │   │   ├── inventory/             # Inventory management
 │   │   └── vehicles/              # Vehicle management endpoints
 │   ├── static/
-│   │   └── swagger.yaml           # API documentation
+│   │   └── swagger.yaml           # API documentation (hand-written)
 │   ├── utils/
 │   │   └── util.py               # Authentication utilities
-│   ├── __init__.py               # Flask app factory
+│   ├── __init__.py               # Flask app factory, /health endpoint
 │   ├── extensions.py             # Flask extensions setup
 │   └── models.py                 # Database models
 ├── tests/                        # Comprehensive test suite
@@ -170,12 +171,16 @@ Mechanic_Shop/
 │   ├── test_inventory.py
 │   ├── test_vehicles.py
 │   └── test_validation.py
-├── instance/                     # Database files
-├── config.py                     # Environment configurations
-├── flask_app.py                  # Production entry point
-├── requirements.txt              # Python dependencies
-├── pytest.ini                   # Test configuration
-└── README.md                     # Project documentation
+├── instance/                      # Local SQLite database files (dev/test only)
+├── config.py                      # Environment configurations
+├── flask_app.py                   # Production entry point
+├── run.py                         # Local development entry point
+├── seed.py                        # Demo data seeding script (see Demo Data)
+├── requirements.txt               # Python dependencies
+├── pytest.ini                     # Test configuration
+├── LICENSE
+├── Mechanic Shop.postman_collection.json
+└── README.md                      # Project documentation
 ```
 
 ---
@@ -194,7 +199,7 @@ Mechanic_Shop/
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/jenplanque/mechanic_shop_api.git
+git clone https://github.com/jenkauppila/mechanic_shop_api.git
 cd mechanic_shop_api
 ```
 
@@ -379,6 +384,10 @@ services:
 **Live API**: [https://mechanic-shop-api-1-ezx9.onrender.com](https://mechanic-shop-api-1-ezx9.onrender.com)  
 **API Documentation**: [https://mechanic-shop-api-1-ezx9.onrender.com/api/docs](https://mechanic-shop-api-1-ezx9.onrender.com/api/docs)
 
+#### 5. Keep-Alive Workflow
+
+Both free-tier services this project runs on will idle down if nothing touches them: Render spins the web service down after 15 minutes of inactivity, and Supabase pauses the database after 7 days of it. [`keep-alive.yml`](.github/workflows/keep-alive.yml) addresses the Supabase side — a scheduled GitHub Action that runs every Monday and Thursday and calls the app's `/health` endpoint. That endpoint runs an actual `SELECT 1` against the database (see `app/__init__.py`), not just a ping against the web server, so the same call keeps both Render and Supabase from going idle. It can also be triggered manually from the Actions tab (`workflow_dispatch`) if you want to wake things up on demand instead of waiting for the schedule.
+
 ---
 
 ## CI/CD Pipeline
@@ -446,19 +455,39 @@ Six issues filed against earlier versions of the API were tracked and closed on 
 
 ---
 
-## Screenshots
+## Demo Data
 
-### 📋 **API Documentation Interface**
+[`seed.py`](seed.py) populates the database with realistic demo data so the live app has something to show besides an empty database: customers, vehicles, mechanics, inventory items, and service tickets (with mechanic assignments and inventory usage).
 
-![API Documentation](pics/swagger.jpg)
+### Safe to re-run
 
-### 🧪 **Test Results Dashboard**
+The script checks row counts before doing anything:
 
-![Test Results Dashboard](pics/pytest_html_report.jpg)
+- If the tables it seeds are empty, it seeds directly.
+- If any of them already have data, it prints the current counts and requires you to type `reset` at an interactive prompt before wiping and reseeding. Anything else cancels with no changes made.
 
-### 🚀 **GitHub Actions Pipeline**
+It only touches the tables it owns — `customers`, `vehicles`, `mechanics`, `inventory_items`, `service_tickets`, `service_inventory`, and the `service_mechanics` association table — never schema, migrations, or any other database.
 
-![Test Results Dashboard](pics/github_actions.jpg)
+### Requires `DATABASE_URL`
+
+`seed.py` builds the app with `ProductionConfig`, the same config `flask_app.py` uses in production, which resolves `DATABASE_URL` via `config.py`'s `get_database_uri()`. If `DATABASE_URL` isn't set, `ProductionConfig` silently falls back to a local SQLite file — to avoid accidentally seeding the wrong database, the script refuses to run unless `DATABASE_URL` is set and points at something other than SQLite.
+
+`seed.py` loads `.env` automatically via `python-dotenv`, so if your Supabase connection string is already in `.env`, just run:
+
+```bash
+python seed.py
+```
+
+The rest of the app (`flask_app.py`, `run.py`) does *not* load `.env` automatically — for those, export `DATABASE_URL` into your shell first:
+
+```bash
+export DATABASE_URL="postgresql://postgres:[email protected]:5432/postgres"
+```
+
+### Model limitations reflected in the seed data
+
+- `Mechanic` has no password field in the current model, so seeded mechanics have no password, matching how the app itself creates them.
+- `ServiceTicket` has no status field, so there's no open/completed status to vary — variation instead comes from `service_date` and `service_desc`.
 
 ---
 
