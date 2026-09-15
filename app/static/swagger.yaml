@@ -42,9 +42,18 @@ paths:
             $ref: '#/definitions/LoginResponse'
           examples:
             application/json:
-              token: your_jwt_token_here
-              message: Login successful
               status: success
+              message: Login successful
+              auth_token: your_jwt_token_here
+        401:
+          description: Invalid email or password
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+            example:
+              error: 'Invalid email or password'
 
   /customers:
     post:
@@ -68,12 +77,33 @@ paths:
               id: 1
               name: John Doe
               email: jonnydoe@example.com
+              phone: '123-456-7890'
               password: securepassword
+        400:
+          description: Validation error or email already exists
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+            example:
+              error: 'Email already exists'
 
     get:
       tags: [Customers]
       summary: Returns list of all customers
-      description: Endpoint to retrieve a list of all customers
+      description: Endpoint to retrieve a list of all customers. Supports optional pagination; falls back to returning every customer if pagination params are omitted or invalid.
+      parameters:
+        - in: query
+          name: page
+          description: Page number to retrieve (defaults to 1)
+          type: integer
+          required: false
+        - in: query
+          name: per_page
+          description: Number of customers per page (defaults to 5)
+          type: integer
+          required: false
       responses:
         200:
           description: Successfully retrieved customer list
@@ -84,12 +114,13 @@ paths:
               - id: 1
                 name: John Doe
                 email: jonnydoe@example.com
+                phone: '123-456-7890'
                 password: securepassword
 
     put:
       tags: [Customers]
       summary: Update customer details (login required)
-      description: Endpoint to update a customer; this is a token authenticated route, and the customer must be logged in to update their account.
+      description: Endpoint to update a customer; this is a token authenticated route, and the customer must be logged in to update their account. The customer being updated is identified by the token, not a request parameter. Limited to 10 updates per day.
       security:
         - bearerAuth: []
       parameters:
@@ -109,13 +140,31 @@ paths:
               id: 1
               name: John Doe Updated
               email: johnnydoe_updated@example.com
-              phone: 123-456-7890
+              phone: '123-456-7890'
               password: newpassword123
+        401:
+          description: Missing, invalid, or expired token
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+            example:
+              message: 'Required token missing'
+        404:
+          description: Customer not found
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+            example:
+              error: 'Customer not found'
 
     delete:
       tags: [Customers]
       summary: Delete Customer (login required)
-      description: Endpoint to delete a customer; requires token authentication, customer must be logged in to delete their account.
+      description: Endpoint to delete a customer; requires token authentication, customer must be logged in to delete their account. The customer being deleted is identified by the token, not a request parameter. Limited to 5 deletions per day.
       security:
         - bearerAuth: []
       responses:
@@ -125,7 +174,193 @@ paths:
             $ref: '#/definitions/DeleteCustomerResponse'
           examples:
             application/json:
-              message: Customer <id> deleted successfully
+              message: 'Customer id: 1 deleted successfully'
+        401:
+          description: Missing, invalid, or expired token
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+            example:
+              message: 'Required token missing'
+
+  # ------------------------
+  # Vehicle Paths
+  # ------------------------
+  /vehicles:
+    post:
+      tags: [Vehicles]
+      summary: Add new vehicle
+      description: Endpoint to register a new vehicle in our system, associated with an existing customer. VINs must be unique.
+      parameters:
+        - in: body
+          name: body
+          description: Information required to create a new Vehicle
+          required: true
+          schema:
+            $ref: '#/definitions/CreateVehiclePayload'
+      responses:
+        201:
+          description: Vehicle created successfully
+          schema:
+            $ref: '#/definitions/VehicleResponse'
+          examples:
+            application/json:
+              id: 1
+              VIN: '1HGCM82633A123456'
+              make: Honda
+              model: Accord
+              year: 2003
+              customer_id: 1
+        400:
+          description: Validation error or VIN already exists
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+            example:
+              error: 'Vehicle with this VIN already exists'
+        404:
+          description: Customer not found
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+            example:
+              error: 'Customer not found'
+
+    get:
+      tags: [Vehicles]
+      summary: Returns list of all vehicles
+      description: Endpoint to retrieve a list of all vehicles.
+      responses:
+        200:
+          description: Successfully retrieved vehicle list
+          schema:
+            $ref: '#/definitions/VehicleList'
+          examples:
+            application/json:
+              - id: 1
+                VIN: '1HGCM82633A123456'
+                make: Honda
+                model: Accord
+                year: 2003
+                customer_id: 1
+
+  /vehicles/{id}:
+    get:
+      tags: [Vehicles]
+      summary: Get vehicle by ID
+      description: Retrieve detailed information about a specific vehicle using its unique ID.
+      parameters:
+        - in: path
+          name: id
+          description: Vehicle's unique ID
+          required: true
+          type: integer
+      responses:
+        200:
+          description: Vehicle found
+          schema:
+            $ref: '#/definitions/VehicleResponse'
+          examples:
+            application/json:
+              id: 1
+              VIN: '1HGCM82633A123456'
+              make: Honda
+              model: Accord
+              year: 2003
+              customer_id: 1
+        404:
+          description: Vehicle not found
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+            example:
+              error: 'Vehicle not found'
+
+    put:
+      tags: [Vehicles]
+      summary: Update vehicle details
+      description: Update details of an existing vehicle using its unique ID.
+      parameters:
+        - in: path
+          name: id
+          description: Vehicle's unique ID
+          required: true
+          type: integer
+        - in: body
+          name: body
+          description: Information required to update a Vehicle
+          required: true
+          schema:
+            $ref: '#/definitions/UpdateVehiclePayload'
+      responses:
+        200:
+          description: Successfully Updated Vehicle
+          schema:
+            $ref: '#/definitions/VehicleResponse'
+          examples:
+            application/json:
+              id: 1
+              VIN: '1HGCM82633A123456'
+              make: Honda
+              model: Accord
+              year: 2004
+              customer_id: 1
+        400:
+          description: Validation error or VIN already exists
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+            example:
+              error: 'Vehicle with this VIN already exists'
+        404:
+          description: Vehicle or Customer not found
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+            example:
+              error: 'Vehicle not found'
+
+    delete:
+      tags: [Vehicles]
+      summary: Delete Vehicle by ID
+      description: Delete a vehicle from the system using its unique ID.
+      parameters:
+        - in: path
+          name: id
+          description: Vehicle's unique ID
+          required: true
+          type: integer
+      responses:
+        200:
+          description: Successfully deleted Vehicle
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+            example:
+              message: 'Vehicle id: 1 deleted successfully'
+        404:
+          description: Vehicle not found
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+            example:
+              error: 'Vehicle not found'
 
   # ------------------------
   # Mechanic Paths
@@ -152,13 +387,22 @@ paths:
               email: jane.mechanic@example.com
               id: 1
               name: Jane Mechanic
-              phone: 123-456-7890
+              phone: '123-456-7890'
               salary: 55000.00
+        400:
+          description: Validation error or email already exists
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+            example:
+              error: 'Email already exists'
 
     get:
       tags: [Mechanics]
       summary: Returns list of all mechanics
-      description: Endpoint to retrieve a list of all mechanics.
+      description: Endpoint to retrieve a list of all mechanics. Limited to 5 requests per minute.
       responses:
         200:
           description: Retrieved mechanic list successfully
@@ -169,7 +413,7 @@ paths:
               - email: jane.mechanic@example.com
                 id: 1
                 name: Jane Mechanic
-                phone: 123-456-7890
+                phone: '123-456-7890'
                 salary: 50000.00
 
   /mechanics/{id}:
@@ -193,8 +437,17 @@ paths:
               email: jane.mechanic@example.com
               id: 1
               name: Jane Mechanic
-              phone: 123-456-7890
-              salary: '50000.00'
+              phone: '123-456-7890'
+              salary: 50000.00
+        404:
+          description: Mechanic not found
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+            example:
+              error: 'Mechanic not found.'
 
     put:
       tags: [Mechanics]
@@ -222,13 +475,31 @@ paths:
               email: jane.mechanic@example.com
               id: 1
               name: Jane Mechanic
-              phone: 123-456-7890
-              salary: '50000.00'
+              phone: '123-456-7890'
+              salary: 50000.00
+        400:
+          description: Validation error or email already exists
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+            example:
+              error: 'Email already exists'
+        404:
+          description: Mechanic not found
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+            example:
+              error: 'Mechanic not found.'
 
     delete:
       tags: [Mechanics]
       summary: Delete Mechanic by ID
-      description: Delete a mechanic from the system using their unique ID.
+      description: Delete a mechanic from the system using their unique ID. Limited to 5 deletions per day.
       parameters:
         - in: path
           name: id
@@ -239,10 +510,21 @@ paths:
         200:
           description: Successfully deleted Mechanic
           schema:
-            $ref: '#/definitions/MechanicResponse'
-          examples:
-            application/json:
-              message: Mechanic id <> deleted successfully
+            type: object
+            properties:
+              message:
+                type: string
+            example:
+              message: 'Mechanic id: 1 deleted successfully.'
+        404:
+          description: Mechanic not found
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+            example:
+              error: 'Mechanic not found.'
 
   /mechanics/search:
     get:
@@ -264,26 +546,39 @@ paths:
               $ref: '#/definitions/MechanicResponse'
           examples:
             application/json:
-              email: jane.mechanic@example.com
-              id: 1
-              name: Jane Mechanic
-              phone: 123-456-7890
-              salary: '50000.00'
+              - email: jane.mechanic@example.com
+                id: 1
+                name: Jane Mechanic
+                phone: '123-456-7890'
+                salary: 50000.00
+        404:
+          description: No mechanics found with that name
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+            example:
+              error: 'No mechanics found with that name.'
 
   /mechanics/usage:
     get:
       tags: [Mechanics]
       summary: Mechanic usage stats
-      description: Returns statistics about mechanic usage, by frequency of service tickets assigned.
+      description: Returns statistics about mechanic usage, by frequency of service tickets assigned, sorted from most to least tickets.
       responses:
         200:
           description: Mechanic usage stats returned
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/MechanicUsageEntry'
           examples:
             application/json:
-              - mechanic_id: 1
+              - id: 1
                 name: Jane Mechanic
                 ticket_count: 5
-              - mechanic_id: 2
+              - id: 2
                 name: John Smith
                 ticket_count: 3
 
@@ -294,7 +589,7 @@ paths:
     post:
       tags: [Service Tickets]
       summary: Create service ticket
-      description: Endpoint to create a new service ticket for a customer.
+      description: Endpoint to create a new service ticket for a customer's vehicle.
       parameters:
         - in: body
           name: body
@@ -309,17 +604,29 @@ paths:
             $ref: '#/definitions/ServiceTicketResponse'
           examples:
             application/json:
-              VIN: '1HGCM82633A123456'
-              customer:
-                email: john.doe@example.com
-                id: 1
-                name: John Doe
-                phone: '123-456-7890'
+              id: 4
+              vehicle_id: 1
               customer_id: 1
-              ticket_id: 4
-              mechanics: []
               service_date: '2025-10-01'
               service_desc: 'Oil change and tire rotation'
+              mechanics: []
+              inventory_items: []
+        400:
+          description: Validation error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+        404:
+          description: Customer or Vehicle not found
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+            example:
+              error: 'Vehicle not found'
 
     get:
       tags: [Service Tickets]
@@ -334,16 +641,13 @@ paths:
               $ref: '#/definitions/ServiceTicketResponse'
           examples:
             application/json:
-              - VIN: '1HGCM82633A123456'
-                customer_info:
-                  id: 1
-                  name: John Doe
-                  email: 'john.doe@example.com'
-                  phone: '123-456-7890'
-                ticket_id: 4
-                mechanics: []
+              - id: 4
+                vehicle_id: 1
+                customer_id: 1
                 service_date: '2025-10-01'
                 service_desc: 'Oil change and tire rotation'
+                mechanics: []
+                inventory_items: []
 
   /service_tickets/{id}:
     get:
@@ -363,22 +667,71 @@ paths:
             $ref: '#/definitions/ServiceTicketResponse'
           examples:
             application/json:
-              VIN: '1HGCM82633A123456'
-              customer_info:
-                email: 'john.doe@example.com'
-                id: 1
-                name: John Doe
-                phone: 123-456-7890
-              ticket_id: 4
-              mechanics: []
+              id: 4
+              vehicle_id: 1
+              customer_id: 1
               service_date: '2025-10-01'
               service_desc: 'Oil change and tire rotation'
+              mechanics: []
+              inventory_items:
+                - id: 1
+                  name: Oil Filter
+                  price: 19.99
+                  quantity: 2
+        404:
+          description: Service Ticket not found
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+            example:
+              error: 'Service Ticket not found.'
+
+    delete:
+      tags: [Service Tickets]
+      summary: Delete Service ticket
+      description: Delete service ticket using its unique ID. A ticket cannot be deleted while it still has mechanics or inventory items assigned to it; remove those first via the edit endpoint.
+      parameters:
+        - in: path
+          name: id
+          description: Service Ticket's unique ID
+          required: true
+          type: integer
+      responses:
+        200:
+          description: Successfully deleted Service Ticket
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+            example:
+              message: 'Service Ticket #4 deleted successfully'
+        400:
+          description: Ticket still has mechanics and/or inventory items assigned
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+            example:
+              error: 'mechanic(s) [1] still assigned to ticket'
+        404:
+          description: Service Ticket not found
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+            example:
+              error: 'Service Ticket not found'
 
   /service_tickets/{id}/edit:
     put:
       tags: [Service Tickets]
       summary: Update Service Ticket
-      description: Add/Remove Mechanic and Inventory Item details of an existing service ticket using its unique ID.
+      description: Add/Remove Mechanic and Inventory Item details of an existing service ticket using its unique ID. Each item added via add_item_ids may specify a quantity (defaults to 1 if omitted). IDs that fail to apply (not found, already assigned, or not assigned) are skipped and reported in the notes list rather than failing the whole request.
       parameters:
         - in: path
           name: id
@@ -387,33 +740,49 @@ paths:
           type: integer
         - in: body
           name: body
-          description: Information required to add/remove Mechanic(s) from a Service Ticket
+          description: Information required to add/remove Mechanic(s) and Inventory Item(s) from a Service Ticket
           required: true
           schema:
             $ref: '#/definitions/UpdateServiceTicketPayload'
       responses:
         200:
-          description: Service Ticket <id> updated successfully
+          description: Service Ticket updated successfully
           schema:
             $ref: '#/definitions/UpdateServiceTicketResponse'
           examples:
             application/json:
+              message: 'Service Ticket #4 updated successfully'
               service_ticket:
-                VIN: '1HGCM82633A123456'
-                customer_id: 3
                 id: 4
+                vehicle_id: 1
+                customer_id: 1
+                service_date: '2025-10-01'
+                service_desc: 'Oil change and tire rotation'
+                mechanics:
+                  - id: 1
+                    name: Jane Mechanic
                 inventory_items:
                   - id: 1
                     name: Oil Filter
                     price: 19.99
-                  - id: 2
-                    name: Tire Rotation
-                    price: 99.99
-              mechanics:
-                - id: 1
-                  name: Jane Mechanic
-              service_date: '2025-10-01'
-              service_desc: 'Oil change and tire rotation'
+                    quantity: 2
+              notes: []
+        400:
+          description: Validation error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+        404:
+          description: Service Ticket not found
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+            example:
+              error: 'Service Ticket #4 not found in system'
 
   /service_tickets/my-tickets:
     get:
@@ -429,25 +798,15 @@ paths:
             type: array
             items:
               $ref: '#/definitions/ServiceTicketResponse'
-        404:
-          description: Customer not found
-
-    delete:
-      tags: [Service Tickets]
-      summary: Delete Service ticket
-      description: Delete service ticket using its unique ID.
-      parameters:
-        - in: path
-          name: id
-          description: Service Ticket's unique ID
-          required: true
-          type: integer
-      responses:
-        200:
-          description: Successfully deleted Service Ticket
-          examples:
-            application/json:
-              message: Service Ticket <id> deleted successfully
+        401:
+          description: Missing, invalid, or expired token
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+            example:
+              message: 'Required token missing'
 
   # ------------------------
   # Inventory Paths
@@ -479,15 +838,26 @@ paths:
           schema:
             type: object
             properties:
-              message:
+              error:
                 type: string
             example:
-              message: 'Item already exists in inventory.'
+              error: 'Item already exists in Inventory'
 
     get:
       tags: [Inventory]
       summary: Returns list of all inventory items
-      description: Endpoint to retrieve a list of all inventory items.
+      description: Endpoint to retrieve a list of all inventory items. Supports optional pagination; falls back to returning every item if pagination params are omitted or invalid.
+      parameters:
+        - in: query
+          name: page
+          description: Page number to retrieve (defaults to 1)
+          type: integer
+          required: false
+        - in: query
+          name: per_page
+          description: Number of items per page (defaults to 5)
+          type: integer
+          required: false
       responses:
         200:
           description: Items retrieved
@@ -495,14 +865,14 @@ paths:
             type: array
             items:
               $ref: '#/definitions/InventoryItemResponse'
-            example:
-              application/json:
-                - id: 1
-                  name: Oil Filter
-                  price: 19.99
-                - id: 2
-                  name: Spark Plug
-                  price: 5.49
+          examples:
+            application/json:
+              - id: 1
+                name: Oil Filter
+                price: 19.99
+              - id: 2
+                name: Spark Plug
+                price: 5.49
 
   /inventory/{id}:
     get:
@@ -530,15 +900,15 @@ paths:
           schema:
             type: object
             properties:
-              message:
+              error:
                 type: string
             example:
-              message: 'Inventory item not found.'
+              error: 'Inventory item not found'
 
     put:
       tags: [Inventory]
       summary: Update inventory item details
-      description: Update an existing inventory item by its unique ID.
+      description: Update an existing inventory item by its unique ID. Limited to 10 updates per day.
       parameters:
         - in: path
           name: id
@@ -553,7 +923,7 @@ paths:
             $ref: '#/definitions/UpdateInventoryItemPayload'
       responses:
         200:
-          description: Item  details updated
+          description: Item details updated
           schema:
             $ref: '#/definitions/InventoryItemResponse'
           examples:
@@ -561,20 +931,29 @@ paths:
               id: 1
               name: Oil Filter
               price: 21.99
+        400:
+          description: Duplicate item name
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+            example:
+              error: 'Item with this name already exists in Inventory'
         404:
           description: Item not found
           schema:
             type: object
             properties:
-              message:
+              error:
                 type: string
             example:
-              message: 'Inventory item not found.'
+              error: 'Inventory item not found'
 
     delete:
       tags: [Inventory]
       summary: Delete inventory item by ID
-      description: Delete an inventory item using its unique ID.
+      description: Delete an inventory item using its unique ID. Limited to 5 deletions per day.
       parameters:
         - in: path
           name: id
@@ -590,16 +969,16 @@ paths:
               message:
                 type: string
             example:
-              message: 'Inventory item <id> deleted successfully'
+              message: 'Inventory item id: 1, Oil Filter deleted successfully'
         404:
           description: Item not found
           schema:
             type: object
             properties:
-              message:
+              error:
                 type: string
             example:
-              message: 'Inventory item not found.'
+              error: 'Inventory item not found'
 
 # ------------------------
 definitions:
@@ -618,11 +997,11 @@ definitions:
   LoginResponse:
     type: object
     properties:
-      token:
+      status:
         type: string
       message:
         type: string
-      status:
+      auth_token:
         type: string
 
   CreateCustomerPayload:
@@ -634,6 +1013,7 @@ definitions:
         type: string
       phone:
         type: string
+        description: Must be a valid 10-digit US phone number
       password:
         type: string
     required: [name, email, phone, password]
@@ -666,6 +1046,7 @@ definitions:
         type: string
       phone:
         type: string
+        description: Must be a valid 10-digit US phone number
       password:
         type: string
     required: [name, email, phone, password]
@@ -680,6 +1061,48 @@ definitions:
         type: string
 
   # ------------------------
+  # Vehicle Definitions
+  # ------------------------
+  CreateVehiclePayload:
+    type: object
+    properties:
+      VIN:
+        type: string
+      make:
+        type: string
+      model:
+        type: string
+      year:
+        type: integer
+      customer_id:
+        type: integer
+    required: [VIN, make, model, year, customer_id]
+
+  UpdateVehiclePayload:
+    $ref: '#/definitions/CreateVehiclePayload'
+
+  VehicleResponse:
+    type: object
+    properties:
+      id:
+        type: integer
+      VIN:
+        type: string
+      make:
+        type: string
+      model:
+        type: string
+      year:
+        type: integer
+      customer_id:
+        type: integer
+
+  VehicleList:
+    type: array
+    items:
+      $ref: '#/definitions/VehicleResponse'
+
+  # ------------------------
   # Mechanic Definitions
   # ------------------------
   CreateMechanicPayload:
@@ -691,6 +1114,7 @@ definitions:
         type: string
       phone:
         type: string
+        description: Must be a valid 10-digit US phone number
       salary:
         type: number
     required: [name, email, phone, salary]
@@ -712,18 +1136,20 @@ definitions:
       salary:
         type: number
 
-  MechanicUpdateResponse:
+  MechanicList:
+    type: array
+    items:
+      $ref: '#/definitions/MechanicResponse'
+
+  MechanicUsageEntry:
     type: object
     properties:
       id:
         type: integer
       name:
         type: string
-
-  MechanicList:
-    type: array
-    items:
-      $ref: '#/definitions/MechanicResponse'
+      ticket_count:
+        type: integer
 
   # ------------------------
   # Service Ticket Definitions
@@ -731,8 +1157,8 @@ definitions:
   CreateServiceTicketPayload:
     type: object
     properties:
-      VIN:
-        type: string
+      vehicle_id:
+        type: integer
       service_date:
         type: string
         format: date
@@ -740,29 +1166,60 @@ definitions:
         type: string
       customer_id:
         type: integer
-    required: [VIN, service_date, service_desc, customer_id]
+    required: [vehicle_id, service_date, service_desc, customer_id]
+
+  ServiceTicketMechanic:
+    type: object
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+
+  ServiceTicketInventoryItem:
+    type: object
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      price:
+        type: number
+      quantity:
+        type: integer
+        description: Quantity of this item used on the ticket
 
   ServiceTicketResponse:
     type: object
     properties:
       id:
         type: integer
-      VIN:
-        type: string
+      vehicle_id:
+        type: integer
       service_date:
         type: string
       service_desc:
         type: string
       customer_id:
         type: integer
-      mechanic_ids:
+      mechanics:
         type: array
         items:
-          type: integer
-      item_ids:
+          $ref: '#/definitions/ServiceTicketMechanic'
+      inventory_items:
         type: array
         items:
-          type: integer
+          $ref: '#/definitions/ServiceTicketInventoryItem'
+
+  AddItemEntry:
+    type: object
+    properties:
+      item_id:
+        type: integer
+      quantity:
+        type: integer
+        description: Defaults to 1 if omitted
+    required: [item_id]
 
   UpdateServiceTicketPayload:
     type: object
@@ -778,36 +1235,24 @@ definitions:
       add_item_ids:
         type: array
         items:
-          type: integer
+          $ref: '#/definitions/AddItemEntry'
       remove_item_ids:
         type: array
         items:
           type: integer
 
   UpdateServiceTicketResponse:
-    type: array
-    properties:
-      mechanics:
-        type: integer
-
-  CreateServiceTicketResponse:
     type: object
     properties:
-      ticket_id:
-        type: integer
-      VIN:
+      message:
         type: string
-      customer_info:
-        $ref: '#/definitions/CreateCustomerResponse'
-      mechanics:
+      service_ticket:
+        $ref: '#/definitions/ServiceTicketResponse'
+      notes:
         type: array
         items:
-          $ref: '#/definitions/MechanicResponse'
-      service_date:
-        type: string
-        format: date
-      service_desc:
-        type: string
+          type: string
+        description: Human-readable notes about any add/remove IDs that could not be applied
 
   # ------------------------
   # Inventory Definitions
