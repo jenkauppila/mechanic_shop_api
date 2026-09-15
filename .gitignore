@@ -8,3 +8,5 @@ __pycache__/
 dev.db
 .claude/
 instance/
+report.html
+assets/
