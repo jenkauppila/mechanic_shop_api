@@ -39,14 +39,13 @@ _Software Development Graduate | Backend Specialization_
 12. [CI/CD Pipeline](#cicd-pipeline)
 13. [Resolved Issues](#resolved-issues)
 14. [Demo Data](#demo-data)
-15. [Collaborators](#collaborators)
-16. [Acknowledgments](#acknowledgments)
+15. [Acknowledgments](#acknowledgments)
 
 ---
 
 ## Introduction
 
-This Mechanic Shop API is my **final capstone project** for the Software Development Backend Specialization program at [Coding Temple](www.codingtemple.com). The project was developed in four comprehensive phases:
+This Mechanic Shop API is my **final capstone project** for the Software Development Backend Specialization program at **Coding Temple**. The project was developed in four comprehensive phases:
 
 1. **Foundation & Documentation**: Core API development with Flask-Swagger documentation
 2. **Advanced Features**: Rate limiting, caching, token authentication and advanced queries
@@ -487,18 +486,15 @@ export DATABASE_URL="postgresql://postgres:[email protected]:5432/postgres"
 - `Mechanic` has no password field in the current model, so seeded mechanics have no password, matching how the app itself creates them.
 - `ServiceTicket` has no status field, so there's no open/completed status to vary — variation instead comes from `service_date` and `service_desc`.
 
----
 
-## Collaborators
+
+## Acknowledgments
 
 This project was developed independently as a capstone project. However, special thanks to:
 
 - **Coding Temple Staff** - Technical Support & Code Reviews
 - **Pytest Community** - For creating an accessible testing framework that supports neurodiverse learning styles
 
----
-
-## Acknowledgments
 
 ### Learning Journey
 
