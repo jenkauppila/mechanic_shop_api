@@ -10,3 +10,4 @@ dev.db
 instance/
 report.html
 assets/
+.hypothesis/

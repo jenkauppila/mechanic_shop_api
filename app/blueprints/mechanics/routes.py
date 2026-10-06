@@ -3,21 +3,19 @@ from flask import request, jsonify
 from marshmallow import ValidationError
 from sqlalchemy import select
 from app.models import db, Mechanic
-from app.extensions import limiter, cache
+from app.extensions import limiter
 from . import mechanics_bp
 
 
 # ADD MECHANIC
 @mechanics_bp.route("/", methods=["POST"])
 def create_mechanic():
-    print("Checking for existing mechanic...")
     data = request.json
 
     # Check for duplicate email FIRST
     existing_query = select(Mechanic).where(Mechanic.email == data.get("email"))
     existing_mechanic = db.session.execute(existing_query).scalars().first()
     if existing_mechanic:
-        print("Duplicate found:", existing_mechanic.email)
         return jsonify({"error": "Email already exists"}), 400
 
     # Then load and validate the new mechanic

@@ -9,7 +9,6 @@ from . import inventory_items_bp
 
 # ADD INVENTORY ITEM
 @inventory_items_bp.route("/", methods=["POST"])
-# @cache.cached(timeout=60)  # Cache for 60 seconds to reduce database load
 def create_inventory_item():
     try:
         inventory_data = inventory_item_schema.load(request.json)

@@ -1,4 +1,3 @@
-from xml.parsers.expat import errors
 from .schemas import (
     service_ticket_schema,
     service_tickets_schema,
@@ -18,7 +17,6 @@ from app.models import (
 )
 from app.utils.util import token_required
 
-# from app.extensions import limiter, cache
 from . import service_tickets_bp
 
 

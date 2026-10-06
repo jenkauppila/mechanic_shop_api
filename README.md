@@ -168,8 +168,7 @@ Mechanic_Shop/
 │   ├── test_mechanics.py
 │   ├── test_service_tickets.py
 │   ├── test_inventory.py
-│   ├── test_vehicles.py
-│   └── test_validation.py
+│   └── test_vehicles.py
 ├── instance/                      # Local SQLite database files (dev/test only)
 ├── config.py                      # Environment configurations
 ├── flask_app.py                   # Production entry point
