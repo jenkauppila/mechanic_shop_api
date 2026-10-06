@@ -4,7 +4,9 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from app import create_app
 from app.models import db
+from app.utils.util import encode_token
 import uuid
+
 
 @pytest.fixture
 def client():
@@ -14,6 +16,12 @@ def client():
         db.drop_all()
         db.create_all()
         yield app.test_client()
+
+
+# HELPER TO BUILD AUTH HEADERS FOR A CUSTOMER (mints a token directly so tests
+# do not use up the login rate limit)
+def auth_headers(customer_id):
+    return {"Authorization": f"Bearer {encode_token(customer_id)}"}
 
 
 # HELPER TO CREATE CUSTOMER
@@ -71,6 +79,7 @@ def create_vehicle(client, customer_id):
             "year": 2020,
             "customer_id": customer_id,
         },
+        headers=auth_headers(customer_id),
     )
     assert response.status_code == 201
     return response.json["id"]

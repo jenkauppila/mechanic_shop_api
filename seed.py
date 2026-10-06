@@ -13,6 +13,10 @@ SAFETY / IDEMPOTENCY
         and requires you to type "reset" at an interactive prompt before
         it wipes those tables and reseeds. Anything else cancels with no
         changes made.
+      - With the --reset flag, the prompt is skipped and the tables are
+        wiped and reseeded automatically. This exists for the scheduled
+        reseed GitHub Action (.github/workflows/reseed.yml), where nobody is
+        there to type "reset".
     This script only touches the app's own tables: customers, vehicles,
     mechanics, inventory_items, service_tickets, service_inventory, and
     the service_mechanics association table. It does not touch schema,
@@ -29,7 +33,8 @@ TARGET DATABASE
 USAGE
     Put DATABASE_URL="<your Supabase connection string>" in a local .env
     file (gitignored, never committed) and run:
-        python seed.py
+        python seed.py            # asks before wiping existing data
+        python seed.py --reset    # wipes and reseeds without asking
 
     (See README "Demo Data" section for the exact Supabase connection
     string format and where to find it.)
@@ -46,6 +51,7 @@ this script, not assumed):
       VINs.
 """
 
+import argparse
 import os
 import random
 import sys
@@ -209,7 +215,7 @@ def wipe_seeded_tables():
     print("Existing rows removed.\n")
 
 
-def check_existing_data_and_confirm():
+def check_existing_data_and_confirm(auto_reset=False):
     counts = existing_row_counts()
     total = sum(counts.values())
     if total == 0:
@@ -218,6 +224,12 @@ def check_existing_data_and_confirm():
     print("Existing data found in one or more tables this script seeds:")
     for table, count in counts.items():
         print(f"  {table}: {count}")
+
+    if auto_reset:
+        print("\n--reset was passed, so skipping the confirmation prompt.")
+        wipe_seeded_tables()
+        return
+
     print(
         "\nRunning this script again will not append duplicate demo rows on "
         "top of these. To wipe ONLY the tables listed above and reseed from "
@@ -341,12 +353,28 @@ def seed():
     return inserted
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Seed the Mechanic Shop API database with demo data."
+    )
+    parser.add_argument(
+        "--reset",
+        action="store_true",
+        help=(
+            "If the seeded tables already contain data, wipe them and reseed "
+            "without asking for confirmation (for scheduled, non-interactive runs)."
+        ),
+    )
+    return parser.parse_args()
+
+
 def main():
+    args = parse_args()
     confirm_target_database()
 
     app = create_app("ProductionConfig")
     with app.app_context():
-        check_existing_data_and_confirm()
+        check_existing_data_and_confirm(auto_reset=args.reset)
         inserted = seed()
 
     print("Seed complete. Rows inserted:")

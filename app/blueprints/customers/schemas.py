@@ -17,7 +17,9 @@ class CustomerSchema(ma.SQLAlchemyAutoSchema):
             error="Phone number must be a valid 10-digit US phone number"
         )
     )
-    password = fields.String(required=True)
+    # load_only: accepted on input, never included in API responses
+    # (previously the password hash was returned by GET and POST /customers/)
+    password = fields.String(required=True, load_only=True)
 
 
 customer_schema = CustomerSchema()

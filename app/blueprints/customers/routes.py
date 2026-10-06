@@ -11,6 +11,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 # CUSTOMER LOGIN
 @customers_bp.route("/login", methods=["POST"])
+@limiter.limit("5 per minute; 30 per hour")  # Slows password guessing
 def login_customer():
     try:
         credentials = login_schema.load(request.json)
@@ -39,6 +40,7 @@ def login_customer():
 
 # ADD CUSTOMER
 @customers_bp.route("/", methods=["POST"])
+@limiter.limit("5 per hour; 20 per day")  # Limits scripted account creation
 def create_customer():
     try:
         customer_data = customer_schema.load(request.json)

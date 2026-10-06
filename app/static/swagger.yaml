@@ -78,7 +78,6 @@ paths:
               name: John Doe
               email: jonnydoe@example.com
               phone: '123-456-7890'
-              password: securepassword
         400:
           description: Validation error or email already exists
           schema:
@@ -115,7 +114,6 @@ paths:
                 name: John Doe
                 email: jonnydoe@example.com
                 phone: '123-456-7890'
-                password: securepassword
 
     put:
       tags: [Customers]
@@ -141,7 +139,6 @@ paths:
               name: John Doe Updated
               email: johnnydoe_updated@example.com
               phone: '123-456-7890'
-              password: newpassword123
         401:
           description: Missing, invalid, or expired token
           schema:
@@ -191,8 +188,10 @@ paths:
   /vehicles:
     post:
       tags: [Vehicles]
-      summary: Add new vehicle
-      description: Endpoint to register a new vehicle in our system, associated with an existing customer. VINs must be unique.
+      summary: Add new vehicle (login required)
+      description: Endpoint to register a new vehicle for the logged in customer. The customer_id in the payload must match the customer in the token. VINs must be unique. Limited to 20 per hour.
+      security:
+        - bearerAuth: []
       parameters:
         - in: body
           name: body
@@ -222,6 +221,24 @@ paths:
                 type: string
             example:
               error: 'Vehicle with this VIN already exists'
+        401:
+          description: Missing, invalid, or expired token
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+            example:
+              message: 'Required token missing'
+        403:
+          description: Vehicle belongs to a different customer
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+            example:
+              error: 'You can only add vehicles to your own account'
         404:
           description: Customer not found
           schema:
@@ -286,8 +303,10 @@ paths:
 
     put:
       tags: [Vehicles]
-      summary: Update vehicle details
-      description: Update details of an existing vehicle using its unique ID.
+      summary: Update vehicle details (login required)
+      description: Update a vehicle that belongs to the logged in customer. A vehicle cannot be reassigned to another customer. Limited to 20 per hour.
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -322,6 +341,24 @@ paths:
                 type: string
             example:
               error: 'Vehicle with this VIN already exists'
+        401:
+          description: Missing, invalid, or expired token
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+            example:
+              message: 'Required token missing'
+        403:
+          description: Vehicle belongs to a different customer
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+            example:
+              error: 'You can only modify your own vehicles'
         404:
           description: Vehicle or Customer not found
           schema:
@@ -334,8 +371,10 @@ paths:
 
     delete:
       tags: [Vehicles]
-      summary: Delete Vehicle by ID
-      description: Delete a vehicle from the system using its unique ID.
+      summary: Delete Vehicle by ID (login required)
+      description: Delete a vehicle that belongs to the logged in customer. Limited to 5 per day.
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -352,6 +391,24 @@ paths:
                 type: string
             example:
               message: 'Vehicle id: 1 deleted successfully'
+        401:
+          description: Missing, invalid, or expired token
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+            example:
+              message: 'Required token missing'
+        403:
+          description: Vehicle belongs to a different customer
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+            example:
+              error: 'You can only delete your own vehicles'
         404:
           description: Vehicle not found
           schema:
@@ -1028,8 +1085,6 @@ definitions:
       email:
         type: string
       phone:
-        type: string
-      password:
         type: string
 
   AllCustomers:
