@@ -17,11 +17,13 @@ from app.models import (
 )
 from app.utils.util import token_required
 
+from app.extensions import limiter
 from . import service_tickets_bp
 
 
 # ADD SERVICE TICKET
 @service_tickets_bp.route("/", methods=["POST"])
+@limiter.limit("20 per hour")  # Limit scripted record creation
 def create_service_ticket():
     data = request.get_json()
 
@@ -97,6 +99,7 @@ def get_my_tickets(current_customer_id):
 
 # UPDATE SERVICE TICKET - ADD/REMOVE MECHANICS AND INVENTORY
 @service_tickets_bp.route("/<int:service_ticket_id>/edit", methods=["PUT"])
+@limiter.limit("20 per hour")
 def edit_service_ticket(service_ticket_id):
     try:
         service_ticket_edits = edit_service_ticket_schema.load(request.json)
@@ -183,6 +186,7 @@ def edit_service_ticket(service_ticket_id):
 
 # DELETE SERVICE TICKET
 @service_tickets_bp.route("/<int:service_ticket_id>", methods=["DELETE"])
+@limiter.limit("5 per day")  # Same cap as other delete routes
 def delete_service_ticket(service_ticket_id):
     service_ticket = db.session.get(ServiceTicket, service_ticket_id)
 

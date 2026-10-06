@@ -3,16 +3,24 @@ from flask import request, jsonify
 from marshmallow import ValidationError
 from sqlalchemy import select
 from app.models import db, Vehicle, Customer
+from app.extensions import limiter
+from app.utils.util import token_required
 from . import vehicles_bp
 
 
 # ADD VEHICLE
 @vehicles_bp.route("/", methods=["POST"])
-def create_vehicle():
+@limiter.limit("20 per hour")  # Limit to avoid scripted record creation
+@token_required  # Only a logged-in customer can add a vehicle
+def create_vehicle(current_customer_id):
     try:
         vehicle_data = vehicle_schema.load(request.json)
     except ValidationError as e:
         return jsonify(e.messages), 400
+
+    # A customer can only add vehicles to their own account
+    if vehicle_data.customer_id != int(current_customer_id):
+        return jsonify({"error": "You can only add vehicles to your own account"}), 403
 
     customer = db.session.get(Customer, vehicle_data.customer_id)
     if not customer:
@@ -48,16 +56,26 @@ def get_vehicle(vehicle_id):
 
 # UPDATE VEHICLE
 @vehicles_bp.route("/<int:vehicle_id>", methods=["PUT"])
-def update_vehicle(vehicle_id):
+@limiter.limit("20 per hour")
+@token_required
+def update_vehicle(current_customer_id, vehicle_id):
     vehicle = db.session.get(Vehicle, vehicle_id)
 
     if not vehicle:
         return jsonify({"error": "Vehicle not found"}), 404
 
+    # A customer can only change their own vehicles
+    if vehicle.customer_id != int(current_customer_id):
+        return jsonify({"error": "You can only modify your own vehicles"}), 403
+
     try:
         updated_vehicle = vehicle_schema.load(request.json)
     except ValidationError as e:
         return jsonify(e.messages), 400
+
+    # ...and cannot hand a vehicle to another customer
+    if updated_vehicle.customer_id != int(current_customer_id):
+        return jsonify({"error": "You can only assign vehicles to your own account"}), 403
 
     customer = db.session.get(Customer, updated_vehicle.customer_id)
     if not customer:
@@ -82,11 +100,17 @@ def update_vehicle(vehicle_id):
 
 # DELETE VEHICLE
 @vehicles_bp.route("/<int:vehicle_id>", methods=["DELETE"])
-def delete_vehicle(vehicle_id):
+@limiter.limit("5 per day")  # Same cap as other delete routes
+@token_required
+def delete_vehicle(current_customer_id, vehicle_id):
     vehicle = db.session.get(Vehicle, vehicle_id)
 
     if not vehicle:
         return jsonify({"error": "Vehicle not found"}), 404
+
+    # A customer can only delete their own vehicles
+    if vehicle.customer_id != int(current_customer_id):
+        return jsonify({"error": "You can only delete your own vehicles"}), 403
 
     db.session.delete(vehicle)
     db.session.commit()

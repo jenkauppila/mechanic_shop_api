@@ -276,7 +276,9 @@ The API is fully documented using **Swagger/OpenAPI 2.0** specification. Each en
 | Customers       | POST   | `/customers`                      | Register new customer                              |
 | Customers       | POST   | `/customers/login`                | Customer authentication                            |
 | Customers       | GET    | `/customers/my-tickets`           | Get customer's service tickets (Auth)              |
-| Vehicles        | POST   | `/vehicles`                       | Register a vehicle for a customer                  |
+| Vehicles        | POST   | `/vehicles`                       | Register a vehicle on your own account (Auth)      |
+| Vehicles        | PUT    | `/vehicles/<id>`                  | Update one of your own vehicles (Auth)             |
+| Vehicles        | DELETE | `/vehicles/<id>`                  | Delete one of your own vehicles (Auth)             |
 | Vehicles        | GET    | `/vehicles`                       | List all vehicles                                  |
 | Mechanics       | GET    | `/mechanics`                      | List all mechanics                                 |
 | Mechanics       | GET    | `/mechanics/usage`                | Mechanics ranked by tickets completed               |
@@ -291,7 +293,7 @@ The API is fully documented using **Swagger/OpenAPI 2.0** specification. Each en
 
 ## Testing
 
-The project includes comprehensive testing using **pytest** with 64 test cases covering:
+The project includes comprehensive testing using **pytest** with 79 test cases covering:
 
 #### Test Coverage:
 
@@ -461,6 +463,7 @@ The script checks row counts before doing anything:
 
 - If the tables it seeds are empty, it seeds directly.
 - If any of them already have data, it prints the current counts and requires you to type `reset` at an interactive prompt before wiping and reseeding. Anything else cancels with no changes made.
+- With `python seed.py --reset`, the prompt is skipped and the tables are wiped and reseeded automatically. This is what the scheduled reseed workflow uses.
 
 It only touches the tables it owns — `customers`, `vehicles`, `mechanics`, `inventory_items`, `service_tickets`, `service_inventory`, and the `service_mechanics` association table — never schema, migrations, or any other database.
 
@@ -484,6 +487,25 @@ export DATABASE_URL="postgresql://postgres:[email protected]:5432/postgres"
 
 - `Mechanic` has no password field in the current model, so seeded mechanics have no password, matching how the app itself creates them.
 - `ServiceTicket` has no status field, so there's no open/completed status to vary — variation instead comes from `service_date` and `service_desc`.
+
+### Scheduled reseed
+
+[`reseed.yml`](.github/workflows/reseed.yml) runs `python seed.py --reset` against the production database every night (and on demand from the Actions tab), so anything added, changed, or deleted through the public API goes back to the sample data. It needs a repository secret named `DATABASE_URL` containing the same Supabase connection string Render uses.
+
+---
+
+## Abuse Protection
+
+The live API is open to the public, so it is protected in layers:
+
+- **Default rate limit** on every route: 200 requests per day and 60 per hour per client IP. The health check, Swagger UI, and static files are exempt.
+- **Stricter limits on sensitive routes**: login (5 per minute, 30 per hour) to slow password guessing, registration (5 per hour, 20 per day) to limit scripted account creation, and caps on creating, updating, and deleting records.
+- **Authentication and ownership**: vehicle create, update, and delete require a login token, and a customer can only touch their own vehicles. Customer update and delete are also token-protected.
+- **No secrets in responses**: password hashes are accepted on input but never returned.
+- **Per-client limits behind Render's proxy**: in production the app reads the client IP from the proxy header, so one visitor cannot use up everyone's limit.
+- **Nightly reseed** (see above) as a backstop for anything the limits do not stop.
+
+Limits are held in memory, which is correct for the single free-tier instance this runs on. Running more than one instance or worker would need a shared store such as Redis.
 
 
 
