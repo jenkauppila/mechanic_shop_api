@@ -1,8 +1,8 @@
 from datetime import date
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from typing import List
-from sqlalchemy import Numeric, Column, Integer
+from sqlalchemy import Numeric
 
 
 class Base(DeclarativeBase):

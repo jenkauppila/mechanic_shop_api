@@ -3,7 +3,7 @@ from flask import request, jsonify
 from marshmallow import ValidationError
 from sqlalchemy import select
 from app.models import db, Customer
-from app.extensions import limiter, cache
+from app.extensions import limiter
 from . import customers_bp
 from app.utils.util import encode_token, token_required
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -40,7 +40,6 @@ def login_customer():
 # ADD CUSTOMER
 @customers_bp.route("/", methods=["POST"])
 def create_customer():
-    print("Checking for existing customer...")
     try:
         customer_data = customer_schema.load(request.json)
 
