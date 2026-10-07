@@ -205,3 +205,25 @@ def test_cannot_reassign_own_vehicle_to_another_customer(client):
         headers=headers,
     )
     assert response.status_code == 403
+
+
+# AUTHORIZATION HEADER FORMATS (Swagger UI sends the token without "Bearer")
+def test_create_vehicle_accepts_bare_token(client):
+    customer_id, _ = create_customer(client)
+    response = client.post(
+        "/vehicles/",
+        json=create_test_vehicle(customer_id),
+        headers={"Authorization": encode_token(customer_id)},
+    )
+    assert response.status_code == 201
+
+
+def test_create_vehicle_rejects_malformed_auth_header(client):
+    customer_id, _ = create_customer(client)
+    response = client.post(
+        "/vehicles/",
+        json=create_test_vehicle(customer_id),
+        headers={"Authorization": f"Token extra {encode_token(customer_id)}"},
+    )
+    assert response.status_code == 401
+    assert response.json["message"] == "Token format invalid"

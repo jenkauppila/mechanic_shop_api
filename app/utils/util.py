@@ -32,9 +32,13 @@ def token_required(f):
         token = None
 
         if "Authorization" in request.headers:
-            try:
-                token = request.headers["Authorization"].split()[1]
-            except IndexError:
+            # Accept "Bearer <token>" or a bare token (Swagger UI does not add "Bearer")
+            parts = request.headers["Authorization"].split()
+            if len(parts) == 1:
+                token = parts[0]
+            elif len(parts) == 2 and parts[0].lower() == "bearer":
+                token = parts[1]
+            elif parts:
                 return jsonify({"message": "Token format invalid"}), 401
 
         if not token:

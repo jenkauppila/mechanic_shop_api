@@ -23,7 +23,8 @@ No setup needed. The API is deployed and open to try in your browser.
 2. To try routes marked with a lock:
    1. Register with `POST /customers/` (use made-up details).
    2. Log in with `POST /customers/login` and copy the `auth_token` from the response.
-   3. Click **Authorize** at the top of the page and enter `Bearer <your token>`.
+   3. Click **Authorize** at the top of the page, paste the token (just the text starting with `eyJ`, no quote marks), then click **Authorize** and **Close**. Typing `Bearer ` before the token is optional.
+   4. Protected routes now work as that customer. Tokens expire after an hour, so log in again if you start getting `401` errors.
 3. Prefer Postman? Import [`Mechanic Shop.postman_collection.json`](Mechanic%20Shop.postman_collection.json) and replace `http://127.0.0.1:5000` with `https://mechanic-shop-api-1-ezx9.onrender.com`.
 
 **Good to know:**
@@ -314,7 +315,7 @@ The API is fully documented using **Swagger/OpenAPI 2.0** specification. Each en
 
 ## Testing
 
-The project includes comprehensive testing using **pytest** with 79 test cases covering:
+The project includes comprehensive testing using **pytest** with 80 test cases covering:
 
 #### Test Coverage:
 
