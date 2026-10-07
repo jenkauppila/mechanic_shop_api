@@ -1,7 +1,7 @@
 # 🧰 Mechanic Shop API
 
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue?logo=python)](https://www.python.org/)
-[![Flask](https://img.shields.io/badge/Flask-2.x-black?logo=flask)](https://flask.palletsprojects.com/)
+[![Flask](https://img.shields.io/badge/Flask-3.1-black?logo=flask)](https://flask.palletsprojects.com/)
 [![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-ORM-red?logo=python)](https://www.sqlalchemy.org/)
 [![Swagger](https://img.shields.io/badge/Swagger-UI-green?logo=swagger)](https://swagger.io/tools/swagger-ui/)
 [![Postman](https://img.shields.io/badge/Tested%20with-Postman-orange?logo=postman)](https://www.postman.com/)
@@ -48,7 +48,7 @@ _Software Development Graduate | Backend Specialization_
 This Mechanic Shop API is my **final capstone project** for the Software Development Backend Specialization program at **Coding Temple**. The project was developed in four comprehensive phases:
 
 1. **Foundation & Documentation**: Core API development with Flask-Swagger documentation
-2. **Advanced Features**: Rate limiting, caching, token authentication and advanced queries
+2. **Advanced Features**: Rate limiting, token authentication and advanced queries
 3. **Resource Expansion**: Inventory management with many-to-many relationships
 4. **Deployment & CI/CD**: Production deployment on Render with automated testing pipeline
 
@@ -70,9 +70,9 @@ As someone with ADHD, I pivoted from the built-in [unittest](https://docs.python
 | Database        | PostgreSQL via Supabase (Production), SQLite (Dev/Test) |
 | Adapter         | pg8000 1.31.2                              |
 | Auth & Security | JWT (python-jose), Werkzeug, Flask-Limiter |
-| Caching         | Flask-Caching, Redis 6.2.0                 |
+| Caching         | Flask-Caching (in-memory, configured but not applied to any route) |
 | Documentation   | Swagger (flask-swagger), Swagger-UI        |
-| Testing         | Pytest, pytest-html, Hypothesis, Postman   |
+| Testing         | Pytest, pytest-html, Postman               |
 | Deployment      | Gunicorn, Render                           |
 | CI/CD           | GitHub Actions                             |
 
@@ -127,7 +127,6 @@ As someone with ADHD, I pivoted from the built-in [unittest](https://docs.python
 
 ### ⚡ **Performance Features**
 
-- Flask-Caching for improved response times
 - Pagination for large datasets
 - Optimized database queries with SQLAlchemy 2.0
 - Connection pooling for database efficiency
@@ -362,7 +361,7 @@ The `ProductionConfig` class handles:
 
 - PostgreSQL URL transformation for pg8000 compatibility
 - Runtime database URI resolution
-- Production-optimized caching and security settings
+- Production security settings (debug off, proxy-aware client IPs for rate limiting)
 
 #### 4. Web Service Configuration
 
