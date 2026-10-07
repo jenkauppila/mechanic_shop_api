@@ -17,6 +17,7 @@ securityDefinitions:
     type: apiKey
     name: Authorization
     in: header
+    description: Paste the auth_token from POST /customers/login (the text starting with eyJ, no quote marks). Adding "Bearer " in front is optional. Tokens expire after one hour.
 
 # ------------------------
 paths:
