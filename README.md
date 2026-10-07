@@ -13,6 +13,27 @@
 
 ---
 
+## Try It Live
+
+No setup needed. The API is deployed and open to try in your browser.
+
+**Interactive docs:** [mechanic-shop-api-1-ezx9.onrender.com/api/docs](https://mechanic-shop-api-1-ezx9.onrender.com/api/docs)
+
+1. Open the link above, pick any endpoint, click **Try it out**, then **Execute** to see the live response.
+2. To try routes marked with a lock:
+   1. Register with `POST /customers/` (use made-up details).
+   2. Log in with `POST /customers/login` and copy the `auth_token` from the response.
+   3. Click **Authorize** at the top of the page and enter `Bearer <your token>`.
+3. Prefer Postman? Import [`Mechanic Shop.postman_collection.json`](Mechanic%20Shop.postman_collection.json) and replace `http://127.0.0.1:5000` with `https://mechanic-shop-api-1-ezx9.onrender.com`.
+
+**Good to know:**
+
+- The first request may take 30 to 60 seconds while the free-tier server wakes up.
+- This is a public demo, so **please use fake names, emails and phone numbers**. Customer details are visible to other visitors.
+- Rate limits apply, and all data resets to sample data every night.
+
+---
+
 ## Author
 
 **Jen Kauppila**  
@@ -25,21 +46,22 @@ _Software Development Graduate | Backend Specialization_
 
 ## Table of Contents
 
-1. [Author](#author)
-2. [Introduction](#introduction)
-3. [Tech Stack](#-tech-stack)
-4. [Features](#features)
-5. [Project Structure](#project-structure)
-6. [Prerequisites](#prerequisites)
-7. [Installation](#installation)
-8. [Usage](#usage)
-9. [API Documentation](#api-documentation)
-10. [Testing](#testing)
-11. [Deployment](#deployment)
-12. [CI/CD Pipeline](#cicd-pipeline)
-13. [Resolved Issues](#resolved-issues)
-14. [Demo Data](#demo-data)
-15. [Acknowledgments](#acknowledgments)
+1. [Try It Live](#try-it-live)
+2. [Author](#author)
+3. [Introduction](#introduction)
+4. [Tech Stack](#-tech-stack)
+5. [Features](#features)
+6. [Project Structure](#project-structure)
+7. [Prerequisites](#prerequisites)
+8. [Installation](#installation)
+9. [Usage](#usage)
+10. [API Documentation](#api-documentation)
+11. [Testing](#testing)
+12. [Deployment](#deployment)
+13. [CI/CD Pipeline](#cicd-pipeline)
+14. [Resolved Issues](#resolved-issues)
+15. [Demo Data](#demo-data)
+16. [Acknowledgments](#acknowledgments)
 
 ---
 
