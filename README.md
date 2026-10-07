@@ -1,7 +1,7 @@
 # 🧰 Mechanic Shop API
 
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue?logo=python)](https://www.python.org/)
-[![Flask](https://img.shields.io/badge/Flask-2.x-black?logo=flask)](https://flask.palletsprojects.com/)
+[![Flask](https://img.shields.io/badge/Flask-3.1-black?logo=flask)](https://flask.palletsprojects.com/)
 [![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-ORM-red?logo=python)](https://www.sqlalchemy.org/)
 [![Swagger](https://img.shields.io/badge/Swagger-UI-green?logo=swagger)](https://swagger.io/tools/swagger-ui/)
 [![Postman](https://img.shields.io/badge/Tested%20with-Postman-orange?logo=postman)](https://www.postman.com/)
@@ -48,7 +48,7 @@ _Software Development Graduate | Backend Specialization_
 This Mechanic Shop API is my **final capstone project** for the Software Development Backend Specialization program at **Coding Temple**. The project was developed in four comprehensive phases:
 
 1. **Foundation & Documentation**: Core API development with Flask-Swagger documentation
-2. **Advanced Features**: Rate limiting, caching, token authentication and advanced queries
+2. **Advanced Features**: Rate limiting, token authentication and advanced queries
 3. **Resource Expansion**: Inventory management with many-to-many relationships
 4. **Deployment & CI/CD**: Production deployment on Render with automated testing pipeline
 
@@ -70,9 +70,9 @@ As someone with ADHD, I pivoted from the built-in [unittest](https://docs.python
 | Database        | PostgreSQL via Supabase (Production), SQLite (Dev/Test) |
 | Adapter         | pg8000 1.31.2                              |
 | Auth & Security | JWT (python-jose), Werkzeug, Flask-Limiter |
-| Caching         | Flask-Caching, Redis 6.2.0                 |
+| Caching         | Flask-Caching (in-memory, configured but not applied to any route) |
 | Documentation   | Swagger (flask-swagger), Swagger-UI        |
-| Testing         | Pytest, pytest-html, Hypothesis, Postman   |
+| Testing         | Pytest, pytest-html, Postman               |
 | Deployment      | Gunicorn, Render                           |
 | CI/CD           | GitHub Actions                             |
 
@@ -127,7 +127,6 @@ As someone with ADHD, I pivoted from the built-in [unittest](https://docs.python
 
 ### ⚡ **Performance Features**
 
-- Flask-Caching for improved response times
 - Pagination for large datasets
 - Optimized database queries with SQLAlchemy 2.0
 - Connection pooling for database efficiency
@@ -276,7 +275,9 @@ The API is fully documented using **Swagger/OpenAPI 2.0** specification. Each en
 | Customers       | POST   | `/customers`                      | Register new customer                              |
 | Customers       | POST   | `/customers/login`                | Customer authentication                            |
 | Customers       | GET    | `/customers/my-tickets`           | Get customer's service tickets (Auth)              |
-| Vehicles        | POST   | `/vehicles`                       | Register a vehicle for a customer                  |
+| Vehicles        | POST   | `/vehicles`                       | Register a vehicle on your own account (Auth)      |
+| Vehicles        | PUT    | `/vehicles/<id>`                  | Update one of your own vehicles (Auth)             |
+| Vehicles        | DELETE | `/vehicles/<id>`                  | Delete one of your own vehicles (Auth)             |
 | Vehicles        | GET    | `/vehicles`                       | List all vehicles                                  |
 | Mechanics       | GET    | `/mechanics`                      | List all mechanics                                 |
 | Mechanics       | GET    | `/mechanics/usage`                | Mechanics ranked by tickets completed               |
@@ -291,7 +292,7 @@ The API is fully documented using **Swagger/OpenAPI 2.0** specification. Each en
 
 ## Testing
 
-The project includes comprehensive testing using **pytest** with 64 test cases covering:
+The project includes comprehensive testing using **pytest** with 79 test cases covering:
 
 #### Test Coverage:
 
@@ -360,7 +361,7 @@ The `ProductionConfig` class handles:
 
 - PostgreSQL URL transformation for pg8000 compatibility
 - Runtime database URI resolution
-- Production-optimized caching and security settings
+- Production security settings (debug off, proxy-aware client IPs for rate limiting)
 
 #### 4. Web Service Configuration
 
@@ -461,6 +462,7 @@ The script checks row counts before doing anything:
 
 - If the tables it seeds are empty, it seeds directly.
 - If any of them already have data, it prints the current counts and requires you to type `reset` at an interactive prompt before wiping and reseeding. Anything else cancels with no changes made.
+- With `python seed.py --reset`, the prompt is skipped and the tables are wiped and reseeded automatically. This is what the scheduled reseed workflow uses.
 
 It only touches the tables it owns — `customers`, `vehicles`, `mechanics`, `inventory_items`, `service_tickets`, `service_inventory`, and the `service_mechanics` association table — never schema, migrations, or any other database.
 
@@ -484,6 +486,25 @@ export DATABASE_URL="postgresql://postgres:[email protected]:5432/postgres"
 
 - `Mechanic` has no password field in the current model, so seeded mechanics have no password, matching how the app itself creates them.
 - `ServiceTicket` has no status field, so there's no open/completed status to vary — variation instead comes from `service_date` and `service_desc`.
+
+### Scheduled reseed
+
+[`reseed.yml`](.github/workflows/reseed.yml) runs `python seed.py --reset` against the production database every night (and on demand from the Actions tab), so anything added, changed, or deleted through the public API goes back to the sample data. It needs a repository secret named `DATABASE_URL` containing the same Supabase connection string Render uses.
+
+---
+
+## Abuse Protection
+
+The live API is open to the public, so it is protected in layers:
+
+- **Default rate limit** on every route: 200 requests per day and 60 per hour per client IP. The health check, Swagger UI, and static files are exempt.
+- **Stricter limits on sensitive routes**: login (5 per minute, 30 per hour) to slow password guessing, registration (5 per hour, 20 per day) to limit scripted account creation, and caps on creating, updating, and deleting records.
+- **Authentication and ownership**: vehicle create, update, and delete require a login token, and a customer can only touch their own vehicles. Customer update and delete are also token-protected.
+- **No secrets in responses**: password hashes are accepted on input but never returned.
+- **Per-client limits behind Render's proxy**: in production the app reads the client IP from the proxy header, so one visitor cannot use up everyone's limit.
+- **Nightly reseed** (see above) as a backstop for anything the limits do not stop.
+
+Limits are held in memory, which is correct for the single free-tier instance this runs on. Running more than one instance or worker would need a shared store such as Redis.
 
 
 

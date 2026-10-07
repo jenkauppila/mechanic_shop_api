@@ -1,5 +1,6 @@
 import os
-from flask import Flask
+from flask import Flask, request
+from werkzeug.middleware.proxy_fix import ProxyFix
 from .extensions import ma, limiter, cache
 from .models import db  # Import the SQLAlchemy instance from models
 from .blueprints.customers import customers_bp  # Import the customers blueprint
@@ -45,11 +46,34 @@ def create_app(config_name):
     elif config_name != "ProductionConfig":
         app.config["RATELIMIT_STORAGE_URL"] = "memory://"
 
+    # On Render the app sits behind a reverse proxy. Without this, every
+    # visitor would share the proxy's IP address and therefore one rate
+    # limit bucket. x_for=1 trusts only the one proxy hop Render adds.
+    if config_name == "ProductionConfig":
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1)
+
+        if not os.environ.get("SECRET_KEY"):
+            app.logger.warning(
+                "SECRET_KEY is not set: falling back to the default signing "
+                "key in app/utils/util.py, which lets anyone forge login "
+                "tokens. Set SECRET_KEY in the environment."
+            )
+
     # Initialize extensions
     ma.init_app(app)  # Initialize Marshmallow
     db.init_app(app)  # Initialize SQLAlchemy
     limiter.init_app(app)
     cache.init_app(app)  # Initialize Flask-Caching
+
+    # The default limit should not apply to the uptime check, the Swagger UI
+    # (which loads many assets per page view) or static files.
+    @limiter.request_filter
+    def skip_default_limit_for_infrastructure():
+        return (
+            request.endpoint == "health_check"
+            or request.endpoint == "static"
+            or (request.blueprint or "") == swaggerui_blueprint.name
+        )
 
     # Add a root route
     @app.route("/")

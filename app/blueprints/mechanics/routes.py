@@ -9,6 +9,7 @@ from . import mechanics_bp
 
 # ADD MECHANIC
 @mechanics_bp.route("/", methods=["POST"])
+@limiter.limit("20 per hour")  # Limit scripted record creation
 def create_mechanic():
     data = request.json
 
@@ -64,6 +65,7 @@ def search_mechanics():
 
 # UPDATE MECHANIC
 @mechanics_bp.route("/<int:mechanic_id>", methods=["PUT"])
+@limiter.limit("10 per day")  # Same cap as other update routes
 def update_mechanic(mechanic_id):
     mechanic = db.session.get(Mechanic, mechanic_id)
 

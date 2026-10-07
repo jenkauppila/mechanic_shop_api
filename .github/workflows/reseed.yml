@@ -1,0 +1,42 @@
+name: Reseed Demo Data
+
+# Wipes and reloads the demo data in the production database on a schedule,
+# so anything added, changed, or deleted through the public API is reset to
+# the known-good sample data. Backstop for the rate limits, which only slow
+# abuse down.
+#
+# Requires a repository secret named DATABASE_URL holding the Supabase
+# connection string (the same value set as DATABASE_URL on Render).
+# Settings > Secrets and variables > Actions > New repository secret.
+
+on:
+  schedule:
+    - cron: '17 9 * * *'   # every day at 09:17 UTC (about 2:17 am Pacific)
+  workflow_dispatch:        # lets you run it by hand from the Actions tab
+
+# Never run two reseeds at once
+concurrency:
+  group: reseed-demo-data
+  cancel-in-progress: false
+
+jobs:
+  reseed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: 3.12
+          cache: pip
+
+      - name: Install Dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Reseed production database
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python seed.py --reset
