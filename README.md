@@ -191,6 +191,7 @@ Mechanic_Shop/
 │   ├── test_mechanics.py
 │   ├── test_service_tickets.py
 │   ├── test_inventory.py
+│   ├── test_security.py
 │   └── test_vehicles.py
 ├── instance/                      # Local SQLite database files (dev/test only)
 ├── config.py                      # Environment configurations
@@ -433,7 +434,7 @@ The project includes a comprehensive [CI/CD pipeline](github/workflows/main.yaml
 #### 3. **Pipeline Features**
 
 - **Trigger**: Automatic on push to `main` branch
-- **Testing**: All 64 tests must pass before deployment
+- **Testing**: All 80 tests must pass before deployment
 - **Security**: Encrypted secrets for deployment credentials
 - **Reliability**: Deployment only occurs after successful testing
 
