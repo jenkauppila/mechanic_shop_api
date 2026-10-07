@@ -13,33 +13,57 @@
 
 ---
 
+## Try It Live
+
+No setup needed. The API is deployed and open to try in your browser.
+
+**Interactive docs:** [mechanic-shop-api-1-ezx9.onrender.com/api/docs](https://mechanic-shop-api-1-ezx9.onrender.com/api/docs)
+
+1. Open the link above, pick any endpoint, click **Try it out**, then **Execute** to see the live response.
+2. To try routes marked with a lock:
+   1. Register with `POST /customers/` (use made-up details).
+   2. Log in with `POST /customers/login` and copy the `auth_token` from the response.
+   3. Click **Authorize** at the top of the page, paste the token (just the text starting with `eyJ`, no quote marks), then click **Authorize** and **Close**. Typing `Bearer ` before the token is optional.
+   4. Protected routes now work as that customer. Tokens expire after an hour, so log in again if you start getting `401` errors.
+3. Prefer Postman? Import [`Mechanic Shop.postman_collection.json`](Mechanic%20Shop.postman_collection.json) and replace `http://127.0.0.1:5000` with `https://mechanic-shop-api-1-ezx9.onrender.com`.
+
+**Good to know:**
+
+- The first request may take 30 to 60 seconds while the free-tier server wakes up.
+- This is a public demo, so **please use fake names, emails and phone numbers**. Customer details are visible to other visitors.
+- Rate limits apply, and all data resets to sample data every night.
+
+---
+
 ## Author
 
 **Jen Kauppila**  
-_Software Development Graduate | Backend Specialization_
+_Software Developer | Backend Specialization_
 
 - GitHub: [@jenkauppila](https://github.com/jenkauppila)
 - LinkedIn: [linkedin.com/in/jenkauppila](https://www.linkedin.com/in/jenkauppila)
+- Website: [Hello World Studio](https://helloworldstud.io)
 
 ---
 
 ## Table of Contents
 
-1. [Author](#author)
-2. [Introduction](#introduction)
-3. [Tech Stack](#-tech-stack)
-4. [Features](#features)
-5. [Project Structure](#project-structure)
-6. [Prerequisites](#prerequisites)
-7. [Installation](#installation)
-8. [Usage](#usage)
-9. [API Documentation](#api-documentation)
-10. [Testing](#testing)
-11. [Deployment](#deployment)
-12. [CI/CD Pipeline](#cicd-pipeline)
-13. [Resolved Issues](#resolved-issues)
-14. [Demo Data](#demo-data)
-15. [Acknowledgments](#acknowledgments)
+1. [Try It Live](#try-it-live)
+2. [Author](#author)
+3. [Introduction](#introduction)
+4. [Tech Stack](#-tech-stack)
+5. [Features](#features)
+6. [Project Structure](#project-structure)
+7. [Prerequisites](#prerequisites)
+8. [Installation](#installation)
+9. [Usage](#usage)
+10. [API Documentation](#api-documentation)
+11. [Testing](#testing)
+12. [Deployment](#deployment)
+13. [CI/CD Pipeline](#cicd-pipeline)
+14. [Resolved Issues](#resolved-issues)
+15. [Demo Data](#demo-data)
+16. [Acknowledgments](#acknowledgments)
 
 ---
 
@@ -62,19 +86,19 @@ As someone with ADHD, I pivoted from the built-in [unittest](https://docs.python
 
 ## 📦 Tech Stack
 
-| Feature         | Technology / Tool                          |
-| --------------- | ------------------------------------------ |
-| Language        | Python 3.9+ (CI pinned to 3.12)            |
-| Framework       | Flask 3.1.1                                |
-| ORM             | Flask-SQLAlchemy 3.1.1, SQLAlchemy 2.0.41  |
-| Database        | PostgreSQL via Supabase (Production), SQLite (Dev/Test) |
-| Adapter         | pg8000 1.31.2                              |
-| Auth & Security | JWT (python-jose), Werkzeug, Flask-Limiter |
+| Feature         | Technology / Tool                                                  |
+| --------------- | ------------------------------------------------------------------ |
+| Language        | Python 3.9+ (CI pinned to 3.12)                                    |
+| Framework       | Flask 3.1.1                                                        |
+| ORM             | Flask-SQLAlchemy 3.1.1, SQLAlchemy 2.0.41                          |
+| Database        | PostgreSQL via Supabase (Production), SQLite (Dev/Test)            |
+| Adapter         | pg8000 1.31.2                                                      |
+| Auth & Security | JWT (python-jose), Werkzeug, Flask-Limiter                         |
 | Caching         | Flask-Caching (in-memory, configured but not applied to any route) |
-| Documentation   | Swagger (flask-swagger), Swagger-UI        |
-| Testing         | Pytest, pytest-html, Postman               |
-| Deployment      | Gunicorn, Render                           |
-| CI/CD           | GitHub Actions                             |
+| Documentation   | Swagger (flask-swagger), Swagger-UI                                |
+| Testing         | Pytest, pytest-html, Postman                                       |
+| Deployment      | Gunicorn, Render                                                   |
+| CI/CD           | GitHub Actions                                                     |
 
 ---
 
@@ -270,29 +294,29 @@ The API is fully documented using **Swagger/OpenAPI 2.0** specification. Each en
 
 ### Key Endpoints:
 
-| Resource        | Method | Endpoint                          | Description                                        |
-| --------------- | ------ | --------------------------------- | --------------------------------------------------- |
-| Customers       | POST   | `/customers`                      | Register new customer                              |
-| Customers       | POST   | `/customers/login`                | Customer authentication                            |
-| Customers       | GET    | `/customers/my-tickets`           | Get customer's service tickets (Auth)              |
-| Vehicles        | POST   | `/vehicles`                       | Register a vehicle on your own account (Auth)      |
-| Vehicles        | PUT    | `/vehicles/<id>`                  | Update one of your own vehicles (Auth)             |
-| Vehicles        | DELETE | `/vehicles/<id>`                  | Delete one of your own vehicles (Auth)             |
-| Vehicles        | GET    | `/vehicles`                       | List all vehicles                                  |
-| Mechanics       | GET    | `/mechanics`                      | List all mechanics                                 |
-| Mechanics       | GET    | `/mechanics/usage`                | Mechanics ranked by tickets completed               |
-| Service Tickets | GET    | `/service_tickets`                | List all service tickets                           |
-| Service Tickets | POST   | `/service_tickets`                | Create a ticket for a customer's vehicle           |
-| Service Tickets | PUT    | `/service_tickets/<id>/edit`      | Add/remove mechanics and inventory (with quantity) on a ticket |
-| Service Tickets | DELETE | `/service_tickets/<id>`           | Delete a ticket (blocked if mechanics/inventory are still assigned) |
-| Inventory       | GET    | `/inventory`                      | List inventory items                               |
-| Inventory       | POST   | `/inventory`                      | Add a new inventory item                           |
+| Resource        | Method | Endpoint                     | Description                                                         |
+| --------------- | ------ | ---------------------------- | ------------------------------------------------------------------- |
+| Customers       | POST   | `/customers`                 | Register new customer                                               |
+| Customers       | POST   | `/customers/login`           | Customer authentication                                             |
+| Customers       | GET    | `/customers/my-tickets`      | Get customer's service tickets (Auth)                               |
+| Vehicles        | POST   | `/vehicles`                  | Register a vehicle on your own account (Auth)                       |
+| Vehicles        | PUT    | `/vehicles/<id>`             | Update one of your own vehicles (Auth)                              |
+| Vehicles        | DELETE | `/vehicles/<id>`             | Delete one of your own vehicles (Auth)                              |
+| Vehicles        | GET    | `/vehicles`                  | List all vehicles                                                   |
+| Mechanics       | GET    | `/mechanics`                 | List all mechanics                                                  |
+| Mechanics       | GET    | `/mechanics/usage`           | Mechanics ranked by tickets completed                               |
+| Service Tickets | GET    | `/service_tickets`           | List all service tickets                                            |
+| Service Tickets | POST   | `/service_tickets`           | Create a ticket for a customer's vehicle                            |
+| Service Tickets | PUT    | `/service_tickets/<id>/edit` | Add/remove mechanics and inventory (with quantity) on a ticket      |
+| Service Tickets | DELETE | `/service_tickets/<id>`      | Delete a ticket (blocked if mechanics/inventory are still assigned) |
+| Inventory       | GET    | `/inventory`                 | List inventory items                                                |
+| Inventory       | POST   | `/inventory`                 | Add a new inventory item                                            |
 
 ---
 
 ## Testing
 
-The project includes comprehensive testing using **pytest** with 79 test cases covering:
+The project includes comprehensive testing using **pytest** with 80 test cases covering:
 
 #### Test Coverage:
 
@@ -441,14 +465,14 @@ jobs:
 
 Six issues filed against earlier versions of the API were tracked and closed on GitHub. Each one changed the schema, validation, or behavior described above:
 
-| Issue                                                              | What it added                                                                                                     |
-| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| No Vehicle model exists                                            | Added a dedicated `Vehicle` model linked to `Customer`; service tickets now reference a vehicle via `vehicle_id` instead of a raw VIN string |
-| Inventory association table has no quantity field                 | Added a `quantity` column to the `service_inventory` association object so ticket line items track how many of each part were used |
-| Write test to check that deleting a service ticket does not release mechanics or inventory | Made ticket deletion consistently blocked (400 error) while mechanics **or** inventory items are still assigned, instead of silently releasing them |
-| Phone number format is not validated                               | Added regex-based phone validation to the customer and mechanic schemas (valid 10-digit US format)                |
-| Passwords are stored and compared in plaintext                     | Added password hashing and verification via Werkzeug (`generate_password_hash` / `check_password_hash`)            |
-| Local dev config uses MySQL, production uses Postgres              | Standardized `DevelopmentConfig` and `TestingConfig` on SQLite so local development and tests are fast and dependency-free, while `ProductionConfig` resolves `DATABASE_URL` to Postgres at runtime |
+| Issue                                                                                      | What it added                                                                                                                                                                                       |
+| ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| No Vehicle model exists                                                                    | Added a dedicated `Vehicle` model linked to `Customer`; service tickets now reference a vehicle via `vehicle_id` instead of a raw VIN string                                                        |
+| Inventory association table has no quantity field                                          | Added a `quantity` column to the `service_inventory` association object so ticket line items track how many of each part were used                                                                  |
+| Write test to check that deleting a service ticket does not release mechanics or inventory | Made ticket deletion consistently blocked (400 error) while mechanics **or** inventory items are still assigned, instead of silently releasing them                                                 |
+| Phone number format is not validated                                                       | Added regex-based phone validation to the customer and mechanic schemas (valid 10-digit US format)                                                                                                  |
+| Passwords are stored and compared in plaintext                                             | Added password hashing and verification via Werkzeug (`generate_password_hash` / `check_password_hash`)                                                                                             |
+| Local dev config uses MySQL, production uses Postgres                                      | Standardized `DevelopmentConfig` and `TestingConfig` on SQLite so local development and tests are fast and dependency-free, while `ProductionConfig` resolves `DATABASE_URL` to Postgres at runtime |
 
 ---
 
@@ -476,7 +500,7 @@ It only touches the tables it owns — `customers`, `vehicles`, `mechanics`, `in
 python seed.py
 ```
 
-The rest of the app (`flask_app.py`, `run.py`) does *not* load `.env` automatically — for those, export `DATABASE_URL` into your shell first:
+The rest of the app (`flask_app.py`, `run.py`) does _not_ load `.env` automatically — for those, export `DATABASE_URL` into your shell first:
 
 ```bash
 export DATABASE_URL="postgresql://postgres:[email protected]:5432/postgres"
@@ -506,15 +530,12 @@ The live API is open to the public, so it is protected in layers:
 
 Limits are held in memory, which is correct for the single free-tier instance this runs on. Running more than one instance or worker would need a shared store such as Redis.
 
-
-
 ## Acknowledgments
 
 This project was developed independently as a capstone project. However, special thanks to:
 
 - **Coding Temple Staff** - Technical Support & Code Reviews
 - **Pytest Community** - For creating an accessible testing framework that supports neurodiverse learning styles
-
 
 ### Learning Journey
 
