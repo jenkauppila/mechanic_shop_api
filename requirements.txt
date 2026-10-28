@@ -9,6 +9,7 @@ flask-swagger-ui==5.21.0
 python-jose==3.5.0
 python-dotenv==1.2.3
 pg8000==1.31.2
+scramp==1.4.18
 redis==6.2.0
 gunicorn==23.0.0
 pytest==8.4.1
