@@ -53,9 +53,9 @@ def create_app(config_name):
         app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1)
 
         if not os.environ.get("SECRET_KEY"):
-            app.logger.warning(
-                "SECRET_KEY is not set: falling back to the default signing "
-                "key in app/utils/util.py, which lets anyone forge login "
+            raise RuntimeError(
+                "SECRET_KEY is not set. Refusing to start in production with "
+                "the default signing key, because anyone could forge login "
                 "tokens. Set SECRET_KEY in the environment."
             )
 
