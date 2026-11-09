@@ -54,6 +54,7 @@ this script, not assumed):
 import argparse
 import os
 import random
+import secrets
 import sys
 from datetime import date, timedelta
 
@@ -372,6 +373,9 @@ def main():
     args = parse_args()
     confirm_target_database()
 
+    # The seed script never issues login tokens, so a throwaway key is
+    # enough to get past the production SECRET_KEY guard.
+    os.environ.setdefault("SECRET_KEY", secrets.token_hex(32))
     app = create_app("ProductionConfig")
     with app.app_context():
         check_existing_data_and_confirm(auto_reset=args.reset)
