@@ -164,45 +164,47 @@ As someone with ADHD, I pivoted from the built-in [unittest](https://docs.python
 ## Project Structure
 
 ```
-Mechanic_Shop/
+mechanic_shop_api/
 ├── .github/
 │   └── workflows/
-│       ├── main.yaml              # CI/CD: run tests, deploy to Render on push
-│       ├── keep-alive.yml         # Scheduled ping to /health, keeps Supabase from auto-pausing
-│       └── reseed.yml             # Nightly reset of the live database to the demo data
+│       ├── keep-alive.yml             # Scheduled ping to /health, keeps Supabase from auto-pausing
+│       ├── main.yaml                  # CI/CD: run tests, deploy to Render on push
+│       └── reseed.yml                 # Nightly reset of the live database to the demo data
 ├── app/
-│   ├── blueprints/                # API route modules
-│   │   ├── customers/             # Customer management endpoints
-│   │   ├── mechanics/             # Mechanic management endpoints
-│   │   ├── service_tickets/       # Service ticket operations
-│   │   ├── inventory/             # Inventory management
-│   │   └── vehicles/              # Vehicle management endpoints
+│   ├── blueprints/                    # One package per resource: __init__.py, routes.py, schemas.py
+│   │   ├── customers/                 # Customer management endpoints
+│   │   ├── inventory/                 # Inventory management endpoints
+│   │   ├── mechanics/                 # Mechanic management endpoints
+│   │   ├── service_tickets/           # Service ticket operations
+│   │   └── vehicles/                  # Vehicle management endpoints
 │   ├── static/
-│   │   └── swagger.yaml           # API documentation (hand-written)
+│   │   └── swagger.yaml               # API documentation (hand-written)
 │   ├── utils/
-│   │   └── util.py               # Authentication utilities
-│   ├── __init__.py               # Flask app factory, /health endpoint
-│   ├── extensions.py             # Flask extensions setup
-│   └── models.py                 # Database models
+│   │   └── util.py                    # JWT token creation and token_required decorator
+│   ├── __init__.py                    # Flask app factory, / and /health routes
+│   ├── extensions.py                  # Marshmallow, rate limiter and cache setup
+│   └── models.py                      # Database models
 ├── docs/
-│   └── BUG_REPORT.md              # Known bugs, their status and GitHub issues
-├── tests/                        # Comprehensive test suite
+│   └── BUG_REPORT.md                  # Known bugs, their status and GitHub issues
+├── tests/                             # Automated test suite (pytest)
+│   ├── __init__.py
 │   ├── test_customers.py
-│   ├── test_mechanics.py
-│   ├── test_service_tickets.py
 │   ├── test_inventory.py
+│   ├── test_mechanics.py
 │   ├── test_security.py
+│   ├── test_service_tickets.py
 │   └── test_vehicles.py
-├── instance/                      # Local SQLite database files (dev/test only)
-├── config.py                      # Environment configurations
-├── flask_app.py                   # Production entry point
-├── run.py                         # Local development entry point
-├── seed.py                        # Demo data seeding script (see Demo Data)
-├── requirements.txt               # Python dependencies
-├── pytest.ini                     # Test configuration
+├── .env.example                       # Template for local environment variables
+├── .gitignore
+├── config.py                          # Development, testing and production configurations
+├── flask_app.py                       # Production entry point
 ├── LICENSE
 ├── Mechanic Shop.postman_collection.json
-└── README.md                      # Project documentation
+├── pytest.ini                         # Test configuration
+├── README.md                          # Project documentation
+├── requirements.txt                   # Python dependencies
+├── run.py                             # Local development entry point
+└── seed.py                            # Demo data seeding script (see Demo Data)
 ```
 
 ---
