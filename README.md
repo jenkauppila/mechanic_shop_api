@@ -78,7 +78,7 @@ This Mechanic Shop API is my **final capstone project** for the Software Develop
 3. **Resource Expansion**: Inventory management with many-to-many relationships
 4. **Deployment & CI/CD**: Production deployment on Render with automated testing pipeline
 
-The API provides complete CRUD operations for managing a Mechanic Shop's daily operations, featuring secure authentication, comprehensive testing and production-ready deployment with continuous integration.
+The API provides complete CRUD operations for managing a Mechanic Shop's daily operations, featuring token authentication for customer routes, an automated test suite and a live deployment with continuous integration. It is a hardened public demo, not a production system, and its known limitations are documented in [docs/BUG_REPORT.md](docs/BUG_REPORT.md).
 
 ### Project Philosophy
 
@@ -250,12 +250,13 @@ pip install -r requirements.txt
 
 ### 4. Environment Configuration
 
-Create a `.env` file in the root directory:
+Copy the template at the repo root and fill in your own values:
 
-```env
-SECRET_KEY=your-secret-key-here
-DATABASE_URL=your-database-url (for production)
+```bash
+cp .env.example .env
 ```
+
+`.env.example` lists every variable the app reads (`SECRET_KEY`, `DATABASE_URL`, and the optional `REDIS_URL` and `PORT`) with placeholder values and a one-line comment for each. `.env` is gitignored, so your real values stay local.
 
 ### 5. Database Setup
 
@@ -327,7 +328,7 @@ The project includes comprehensive testing using **pytest** with 80 test cases c
 
 - ✅ **Customer Operations**: Registration, login, CRUD operations
 - ✅ **Mechanic Management**: Creation, updates, search functionality
-- ✅ **Service Tickets**: Full lifecycle testing with authentication
+- ✅ **Service Tickets**: Create, edit and delete (open routes, no login required), plus token-protected `my-tickets` lookup
 - ✅ **Inventory Management**: CRUD operations and ticket integration
 - ✅ **Authentication**: Token generation and validation
 - ✅ **Error Handling**: Invalid inputs and edge cases
