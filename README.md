@@ -64,21 +64,17 @@ _Software Developer | Backend Specialization_
 14. [Resolved Issues](#resolved-issues)
 15. [Demo Data](#demo-data)
 16. [Abuse Protection](#abuse-protection)
-17. [Acknowledgments](#acknowledgments)
-18. [Future Enhancements](#future-enhancements)
+17. [Project Background](#project-background)
+18. [Acknowledgments](#acknowledgments)
+19. [Future Enhancements](#future-enhancements)
 
 ---
 
 ## Introduction
 
-This Mechanic Shop API is my **final capstone project** for the Software Development Backend Specialization program at **Coding Temple**. The project was developed in four comprehensive phases:
+The Mechanic Shop API is a Flask-based REST API for managing customers, vehicles, service tickets, mechanics, and parts inventory. It includes token authentication for customer routes, interactive API documentation, an automated test suite, and a live public demo with sample data that refreshes every night. It is a hardened public demo, not a production system, and its known limitations are documented in [docs/BUG_REPORT.md](docs/BUG_REPORT.md).
 
-1. **Foundation & Documentation**: Core API development with Flask-Swagger documentation
-2. **Advanced Features**: Rate limiting, token authentication and advanced queries
-3. **Resource Expansion**: Inventory management with many-to-many relationships
-4. **Deployment & CI/CD**: Production deployment on Render with automated testing pipeline
-
-The API provides complete CRUD operations for managing a Mechanic Shop's daily operations, featuring token authentication for customer routes, an automated test suite and a live deployment with continuous integration. It is a hardened public demo, not a production system, and its known limitations are documented in [docs/BUG_REPORT.md](docs/BUG_REPORT.md).
+Planned next: stock control, meaning tracking how many of each part are in stock, blocking tickets that request more than is available, and reporting which parts are committed to open tickets. See [Future Enhancements](#future-enhancements).
 
 ### Project Philosophy
 
@@ -168,45 +164,47 @@ As someone with ADHD, I pivoted from the built-in [unittest](https://docs.python
 ## Project Structure
 
 ```
-Mechanic_Shop/
+mechanic_shop_api/
 ├── .github/
 │   └── workflows/
-│       ├── main.yaml              # CI/CD: run tests, deploy to Render on push
-│       ├── keep-alive.yml         # Scheduled ping to /health, keeps Supabase from auto-pausing
-│       └── reseed.yml             # Nightly reset of the live database to the demo data
+│       ├── keep-alive.yml             # Scheduled ping to /health, keeps Supabase from auto-pausing
+│       ├── main.yaml                  # CI/CD: run tests, deploy to Render on push
+│       └── reseed.yml                 # Nightly reset of the live database to the demo data
 ├── app/
-│   ├── blueprints/                # API route modules
-│   │   ├── customers/             # Customer management endpoints
-│   │   ├── mechanics/             # Mechanic management endpoints
-│   │   ├── service_tickets/       # Service ticket operations
-│   │   ├── inventory/             # Inventory management
-│   │   └── vehicles/              # Vehicle management endpoints
+│   ├── blueprints/                    # One package per resource: __init__.py, routes.py, schemas.py
+│   │   ├── customers/                 # Customer management endpoints
+│   │   ├── inventory/                 # Inventory management endpoints
+│   │   ├── mechanics/                 # Mechanic management endpoints
+│   │   ├── service_tickets/           # Service ticket operations
+│   │   └── vehicles/                  # Vehicle management endpoints
 │   ├── static/
-│   │   └── swagger.yaml           # API documentation (hand-written)
+│   │   └── swagger.yaml               # API documentation (hand-written)
 │   ├── utils/
-│   │   └── util.py               # Authentication utilities
-│   ├── __init__.py               # Flask app factory, /health endpoint
-│   ├── extensions.py             # Flask extensions setup
-│   └── models.py                 # Database models
+│   │   └── util.py                    # JWT token creation and token_required decorator
+│   ├── __init__.py                    # Flask app factory, / and /health routes
+│   ├── extensions.py                  # Marshmallow, rate limiter and cache setup
+│   └── models.py                      # Database models
 ├── docs/
-│   └── BUG_REPORT.md              # Known bugs, their status and GitHub issues
-├── tests/                        # Comprehensive test suite
+│   └── BUG_REPORT.md                  # Known bugs, their status and GitHub issues
+├── tests/                             # Automated test suite (pytest)
+│   ├── __init__.py
 │   ├── test_customers.py
-│   ├── test_mechanics.py
-│   ├── test_service_tickets.py
 │   ├── test_inventory.py
+│   ├── test_mechanics.py
 │   ├── test_security.py
+│   ├── test_service_tickets.py
 │   └── test_vehicles.py
-├── instance/                      # Local SQLite database files (dev/test only)
-├── config.py                      # Environment configurations
-├── flask_app.py                   # Production entry point
-├── run.py                         # Local development entry point
-├── seed.py                        # Demo data seeding script (see Demo Data)
-├── requirements.txt               # Python dependencies
-├── pytest.ini                     # Test configuration
+├── .env.example                       # Template for local environment variables
+├── .gitignore
+├── config.py                          # Development, testing and production configurations
+├── flask_app.py                       # Production entry point
 ├── LICENSE
 ├── Mechanic Shop.postman_collection.json
-└── README.md                      # Project documentation
+├── pytest.ini                         # Test configuration
+├── README.md                          # Project documentation
+├── requirements.txt                   # Python dependencies
+├── run.py                             # Local development entry point
+└── seed.py                            # Demo data seeding script (see Demo Data)
 ```
 
 ---
@@ -549,9 +547,18 @@ Some write routes are rate limited but need no login, so anyone can call them:
 
 The rate limits and the nightly reseed contain the damage in the meantime. See [docs/BUG_REPORT.md](docs/BUG_REPORT.md) for steps to reproduce and the other open bugs.
 
+## Project Background
+
+This project began as my final capstone for Coding Temple's Software Development Backend Specialization. It has since continued to develop through independent work on deployment, security hardening, and feature planning. The original development phases were:
+
+1. **Foundation & Documentation**: Core API development with Flask-Swagger documentation
+2. **Advanced Features**: Rate limiting, token authentication and advanced queries
+3. **Resource Expansion**: Inventory management with many-to-many relationships
+4. **Deployment & CI/CD**: Production deployment on Render with automated testing pipeline
+
 ## Acknowledgments
 
-This project was developed independently as a capstone project. However, special thanks to:
+This project began as a capstone and was developed independently. Special thanks to:
 
 - **Coding Temple Staff** - Technical Support & Code Reviews
 - **Pytest Community** - For creating an accessible testing framework that supports neurodiverse learning styles
@@ -609,4 +616,4 @@ These are scoped ideas, not committed roadmap items:
 
   ***
 
-_Built with ❤️ and ☕ by Jen Kauppila | Final Capstone Project 2025_
+_Built with ❤️ and ☕ by Jen Kauppila_
