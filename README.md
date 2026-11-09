@@ -25,7 +25,7 @@ No setup needed. The API is deployed and open to try in your browser.
    2. Log in with `POST /customers/login` and copy the `auth_token` from the response.
    3. Click **Authorize** at the top of the page, paste the token (just the text starting with `eyJ`, no quote marks), then click **Authorize** and **Close**. Typing `Bearer ` before the token is optional.
    4. Protected routes now work as that customer. Tokens expire after an hour, so log in again if you start getting `401` errors.
-3. Prefer Postman? Import [`Mechanic Shop.postman_collection.json`](Mechanic%20Shop.postman_collection.json) and replace `http://127.0.0.1:5000` with `https://mechanic-shop-api-1-ezx9.onrender.com`.
+3. Prefer Postman? Import [`Mechanic Shop.postman_collection.json`](Mechanic%20Shop.postman_collection.json) and replace `http://127.0.0.1:5000` with `https://mechanic-shop-api-1-ezx9.onrender.com`. The vehicle create, update and delete requests in the collection need a login token, so add one under each request's **Authorization** tab (type **Bearer Token**) or they will return `401`.
 
 **Good to know:**
 
@@ -63,7 +63,9 @@ _Software Developer | Backend Specialization_
 13. [CI/CD Pipeline](#cicd-pipeline)
 14. [Resolved Issues](#resolved-issues)
 15. [Demo Data](#demo-data)
-16. [Acknowledgments](#acknowledgments)
+16. [Abuse Protection](#abuse-protection)
+17. [Acknowledgments](#acknowledgments)
+18. [Future Enhancements](#future-enhancements)
 
 ---
 
@@ -140,7 +142,6 @@ As someone with ADHD, I pivoted from the built-in [unittest](https://docs.python
 - Inventory items (with quantity) can be added to or removed from a ticket
 - Deletion is blocked while any mechanics or inventory items are still assigned to the ticket
 - Customer-specific ticket retrieval with authentication
-- Status tracking and updates
 
 ### 📦 **Inventory Management**
 
@@ -171,7 +172,8 @@ Mechanic_Shop/
 ├── .github/
 │   └── workflows/
 │       ├── main.yaml              # CI/CD: run tests, deploy to Render on push
-│       └── keep-alive.yml         # Scheduled ping to /health, keeps Supabase from auto-pausing
+│       ├── keep-alive.yml         # Scheduled ping to /health, keeps Supabase from auto-pausing
+│       └── reseed.yml             # Nightly reset of the live database to the demo data
 ├── app/
 │   ├── blueprints/                # API route modules
 │   │   ├── customers/             # Customer management endpoints
@@ -186,6 +188,8 @@ Mechanic_Shop/
 │   ├── __init__.py               # Flask app factory, /health endpoint
 │   ├── extensions.py             # Flask extensions setup
 │   └── models.py                 # Database models
+├── docs/
+│   └── BUG_REPORT.md              # Known bugs, their status and GitHub issues
 ├── tests/                        # Comprehensive test suite
 │   ├── test_customers.py
 │   ├── test_mechanics.py
@@ -299,7 +303,7 @@ The API is fully documented using **Swagger/OpenAPI 2.0** specification. Each en
 | --------------- | ------ | ---------------------------- | ------------------------------------------------------------------- |
 | Customers       | POST   | `/customers`                 | Register new customer                                               |
 | Customers       | POST   | `/customers/login`           | Customer authentication                                             |
-| Customers       | GET    | `/customers/my-tickets`      | Get customer's service tickets (Auth)                               |
+| Service Tickets | GET    | `/service_tickets/my-tickets` | Get the logged-in customer's service tickets (Auth)                |
 | Vehicles        | POST   | `/vehicles`                  | Register a vehicle on your own account (Auth)                       |
 | Vehicles        | PUT    | `/vehicles/<id>`             | Update one of your own vehicles (Auth)                              |
 | Vehicles        | DELETE | `/vehicles/<id>`             | Delete one of your own vehicles (Auth)                              |
@@ -377,8 +381,9 @@ The API is deployed on **Render** with the following configuration:
 ```env
 DATABASE_URL=postgresql://...pooler.supabase.com:6543/postgres  # Supabase transaction pooler connection string
 SECRET_KEY=production-secret-key
-FLASK_ENV=production
 ```
+
+`SECRET_KEY` is required in production. It signs the login tokens, so if it is not set the app refuses to start rather than fall back to the default development key, which would let anyone forge tokens (see `create_app` in `app/__init__.py`).
 
 #### 3. Production Configuration
 
@@ -408,7 +413,7 @@ services:
 
 #### 5. Keep-Alive Workflow
 
-Both free-tier services this project runs on will idle down if nothing touches them: Render spins the web service down after 15 minutes of inactivity, and Supabase pauses the database after 7 days of it. [`keep-alive.yml`](.github/workflows/keep-alive.yml) addresses the Supabase side — a scheduled GitHub Action that runs every Monday and Thursday and calls the app's `/health` endpoint. That endpoint runs an actual `SELECT 1` against the database (see `app/__init__.py`), not just a ping against the web server, so the same call keeps both Render and Supabase from going idle. It can also be triggered manually from the Actions tab (`workflow_dispatch`) if you want to wake things up on demand instead of waiting for the schedule.
+Both free-tier services this project runs on will idle down if nothing touches them: Render spins the web service down after 15 minutes of inactivity, and Supabase pauses the database after 7 days of it. [`keep-alive.yml`](.github/workflows/keep-alive.yml) handles the Supabase side. It is a scheduled GitHub Action that runs every Monday and Thursday and calls the app's `/health` endpoint. That endpoint runs a real `SELECT 1` against the database (see `app/__init__.py`), so each call counts as database activity and keeps Supabase from pausing. It does not stop Render from spinning down: a ping twice a week cannot beat a 15 minute idle timer, so the first request after a quiet spell still waits for Render to wake up. It can also be triggered manually from the Actions tab (`workflow_dispatch`) if you want to wake things up on demand instead of waiting for the schedule.
 
 ---
 
@@ -416,7 +421,7 @@ Both free-tier services this project runs on will idle down if nothing touches t
 
 ### GitHub Actions Workflow
 
-The project includes a comprehensive [CI/CD pipeline](github/workflows/main.yaml) with:
+The project includes a comprehensive [CI/CD pipeline](.github/workflows/main.yaml) with:
 
 #### 1. **Test Job**
 
@@ -501,6 +506,8 @@ It only touches the tables it owns — `customers`, `vehicles`, `mechanics`, `in
 python seed.py
 ```
 
+`seed.py` does not need a real `SECRET_KEY`. It never issues login tokens, so if `SECRET_KEY` is not set it generates a random throwaway key for that run, just enough to pass the production startup check. That is why the reseed workflow only needs the `DATABASE_URL` secret.
+
 The rest of the app (`flask_app.py`, `run.py`) does _not_ load `.env` automatically — for those, export `DATABASE_URL` into your shell first:
 
 ```bash
@@ -530,6 +537,16 @@ The live API is open to the public, so it is protected in layers:
 - **Nightly reseed** (see above) as a backstop for anything the limits do not stop.
 
 Limits are held in memory, which is correct for the single free-tier instance this runs on. Running more than one instance or worker would need a shared store such as Redis.
+
+### Known limitations
+
+Some write routes are rate limited but need no login, so anyone can call them:
+
+- **Service tickets**: create, edit, and delete ([issue #8](https://github.com/jenkauppila/mechanic_shop_api/issues/8))
+- **Inventory**: update and delete ([issue #9](https://github.com/jenkauppila/mechanic_shop_api/issues/9))
+- **Mechanics**: create, update, and delete ([issue #12](https://github.com/jenkauppila/mechanic_shop_api/issues/12)). This needs a staff or admin role, which the app does not have yet.
+
+The rate limits and the nightly reseed contain the damage in the meantime. See [docs/BUG_REPORT.md](docs/BUG_REPORT.md) for steps to reproduce and the other open bugs.
 
 ## Acknowledgments
 
