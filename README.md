@@ -92,7 +92,6 @@ As someone with ADHD, I pivoted from the built-in [unittest](https://docs.python
 | Database        | PostgreSQL via Supabase (Production), SQLite (Dev/Test)            |
 | Adapter         | pg8000 1.31.2                                                      |
 | Auth & Security | JWT (python-jose), Werkzeug, Flask-Limiter                         |
-| Caching         | Flask-Caching (in-memory, configured but not applied to any route) |
 | Documentation   | Swagger UI (flask-swagger-ui)                                      |
 | Testing         | Pytest, pytest-html, Postman                                       |
 | Deployment      | Gunicorn, Render                                                   |
@@ -182,7 +181,7 @@ mechanic_shop_api/
 │   ├── utils/
 │   │   └── util.py                    # JWT token creation and token_required decorator
 │   ├── __init__.py                    # Flask app factory, / and /health routes
-│   ├── extensions.py                  # Marshmallow, rate limiter and cache setup
+│   ├── extensions.py                  # Marshmallow and rate limiter setup
 │   └── models.py                      # Database models
 ├── docs/
 │   └── BUG_REPORT.md                  # Known bugs, their status and GitHub issues
@@ -249,7 +248,7 @@ Copy the template at the repo root and fill in your own values:
 cp .env.example .env
 ```
 
-`.env.example` lists every variable the app reads (`SECRET_KEY`, `DATABASE_URL`, and the optional `REDIS_URL` and `PORT`) with placeholder values and a one-line comment for each. `.env` is gitignored, so your real values stay local.
+`.env.example` lists every variable the app reads (`SECRET_KEY`, `DATABASE_URL`, and the optional `PORT`) with placeholder values and a one-line comment for each. `.env` is gitignored, so your real values stay local.
 
 ### 5. Database Setup
 
@@ -530,7 +529,7 @@ The live API is open to the public, so it is protected in layers:
 - **Per-client limits behind Render's proxy**: in production the app reads the client IP from the proxy header, so one visitor cannot use up everyone's limit.
 - **Nightly reseed** (see above) as a backstop for anything the limits do not stop.
 
-Limits are held in memory, which is correct for the single free-tier instance this runs on. Running more than one instance or worker would need a shared store such as Redis.
+Limits are held in memory, which is correct for the single free-tier instance this runs on. Running more than one instance or worker would need a shared store such as Redis. This project does not currently set one up.
 
 ### Known limitations
 

@@ -12,8 +12,6 @@ def mask_database_uri(database_uri):
 class DevelopmentConfig:
     SQLALCHEMY_DATABASE_URI = "sqlite:///dev.db"
     DEBUG = True
-    CACHE_TYPE = "SimpleCache"
-    CACHE_DEFAULT_TIMEOUT = 300  # Default cache timeout in seconds
     # Rate limiter storage (suppress warning)
     RATELIMIT_STORAGE_URL = "memory://"
 
@@ -22,8 +20,6 @@ class TestingConfig:
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"  # In-memory SQLite for testing
     TESTING = True
     DEBUG = True
-    CACHE_TYPE = "SimpleCache"
-    CACHE_DEFAULT_TIMEOUT = 300
     # Rate limiter storage (suppress warning)
     RATELIMIT_STORAGE_URL = "memory://"
 
@@ -43,8 +39,6 @@ def get_database_uri():
 class ProductionConfig:
     DEBUG = False
     TESTING = False
-    CACHE_TYPE = "SimpleCache"
-    CACHE_DEFAULT_TIMEOUT = 300
     # Rate limiter storage (suppress warning)
     RATELIMIT_STORAGE_URL = "memory://"
 
