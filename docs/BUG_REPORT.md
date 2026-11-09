@@ -4,7 +4,7 @@ Security and data-quality issues found while reviewing the Mechanic Shop API bef
 
 All steps to reproduce run against a **local copy** of the app (`python run.py`, which serves at `http://127.0.0.1:5000`). Never run them against the live Render URL.
 
-A bug marked "Fixed in branch harden-rate-limits" stays that way until the branch is merged into `main`.
+A bug marked "Fixed in PR #7" was fixed by [PR #7](https://github.com/jenkauppila/mechanic_shop_api/pull/7), which is merged into `main`. Each open bug links to the GitHub issue that tracks it.
 
 ---
 
@@ -23,7 +23,7 @@ A bug marked "Fixed in branch harden-rate-limits" stays that way until the branc
 
 **Severity:** High
 
-**Status:** Fixed in branch harden-rate-limits (5 per minute, 30 per hour).
+**Status:** Fixed in PR #7 (5 per minute, 30 per hour).
 
 ---
 
@@ -41,7 +41,7 @@ A bug marked "Fixed in branch harden-rate-limits" stays that way until the branc
 
 **Severity:** Medium
 
-**Status:** Fixed in branch harden-rate-limits (5 per hour, 20 per day).
+**Status:** Fixed in PR #7 (5 per hour, 20 per day).
 
 ---
 
@@ -60,7 +60,7 @@ A bug marked "Fixed in branch harden-rate-limits" stays that way until the branc
 
 **Severity:** High
 
-**Status:** Fixed in branch harden-rate-limits (token required, ownership checked, rate limited).
+**Status:** Fixed in PR #7 (token required, ownership checked, rate limited).
 
 ---
 
@@ -75,11 +75,11 @@ A bug marked "Fixed in branch harden-rate-limits" stays that way until the branc
 
 **Expected:** Changing or deleting a ticket requires a login token.
 
-**Actual:** Anyone can create, edit or delete any service ticket. The harden-rate-limits branch adds rate limits to these routes, which slows abuse but does not require a login.
+**Actual:** Anyone can create, edit or delete any service ticket. PR #7 added rate limits to these routes, which slows abuse but does not require a login.
 
 **Severity:** High
 
-**Status:** Open
+**Status:** Open, tracked in [issue #8](https://github.com/jenkauppila/mechanic_shop_api/issues/8)
 
 ---
 
@@ -98,7 +98,7 @@ A bug marked "Fixed in branch harden-rate-limits" stays that way until the branc
 
 **Severity:** Medium
 
-**Status:** Open
+**Status:** Open, tracked in [issue #9](https://github.com/jenkauppila/mechanic_shop_api/issues/9)
 
 ---
 
@@ -117,7 +117,7 @@ A bug marked "Fixed in branch harden-rate-limits" stays that way until the branc
 
 **Severity:** High
 
-**Status:** Fixed in branch harden-rate-limits (`password` is now `load_only`).
+**Status:** Fixed in PR #7 (`password` is now `load_only`).
 
 ---
 
@@ -136,7 +136,7 @@ A bug marked "Fixed in branch harden-rate-limits" stays that way until the branc
 
 **Severity:** Medium
 
-**Status:** Open
+**Status:** Open, tracked in [issue #10](https://github.com/jenkauppila/mechanic_shop_api/issues/10)
 
 ---
 
@@ -160,7 +160,7 @@ A bug marked "Fixed in branch harden-rate-limits" stays that way until the branc
 
 **Severity:** Medium
 
-**Status:** Open
+**Status:** Open, tracked in [issue #11](https://github.com/jenkauppila/mechanic_shop_api/issues/11)
 
 ---
 
@@ -178,7 +178,7 @@ A bug marked "Fixed in branch harden-rate-limits" stays that way until the branc
 
 **Severity:** Low
 
-**Status:** Fixed by the README commit in branch harden-rate-limits, once merged.
+**Status:** Fixed in PR #7 (README corrected).
 
 ---
 
@@ -197,4 +197,4 @@ A bug marked "Fixed in branch harden-rate-limits" stays that way until the branc
 
 **Severity:** Medium
 
-**Status:** Open (found during review)
+**Status:** Open (found during review), tracked in [issue #12](https://github.com/jenkauppila/mechanic_shop_api/issues/12)
