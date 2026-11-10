@@ -66,7 +66,7 @@ _Software Developer | Backend Specialization_
 16. [Abuse Protection](#abuse-protection)
 17. [Project Background](#project-background)
 18. [Acknowledgments](#acknowledgments)
-19. [Future Enhancements](#future-enhancements)
+19. [Roadmap](#roadmap)
 
 ---
 
@@ -74,7 +74,7 @@ _Software Developer | Backend Specialization_
 
 The Mechanic Shop API is a Flask-based REST API for managing customers, vehicles, service tickets, mechanics, and parts inventory. It includes token authentication for customer routes, interactive API documentation, an automated test suite, and a live public demo with sample data that refreshes every night. It is a hardened public demo, not a production system, and its known limitations are documented in [docs/BUG_REPORT.md](docs/BUG_REPORT.md).
 
-Planned next: stock control, meaning tracking how many of each part are in stock, blocking tickets that request more than is available, and reporting which parts are committed to open tickets. See [Future Enhancements](#future-enhancements).
+Planned next: stock control, meaning tracking parts on hand, reserved for tickets, available, and used, and flagging low stock. See [ROADMAP.md](ROADMAP.md).
 
 ### Project Philosophy
 
@@ -92,8 +92,7 @@ As someone with ADHD, I pivoted from the built-in [unittest](https://docs.python
 | Database        | PostgreSQL via Supabase (Production), SQLite (Dev/Test)            |
 | Adapter         | pg8000 1.31.2                                                      |
 | Auth & Security | JWT (python-jose), Werkzeug, Flask-Limiter                         |
-| Caching         | Flask-Caching (in-memory, configured but not applied to any route) |
-| Documentation   | Swagger (flask-swagger), Swagger-UI                                |
+| Documentation   | Swagger UI (flask-swagger-ui)                                      |
 | Testing         | Pytest, pytest-html, Postman                                       |
 | Deployment      | Gunicorn, Render                                                   |
 | CI/CD           | GitHub Actions                                                     |
@@ -182,20 +181,14 @@ mechanic_shop_api/
 │   ├── utils/
 │   │   └── util.py                    # JWT token creation and token_required decorator
 │   ├── __init__.py                    # Flask app factory, / and /health routes
-│   ├── extensions.py                  # Marshmallow, rate limiter and cache setup
+│   ├── extensions.py                  # Marshmallow and rate limiter setup
 │   └── models.py                      # Database models
 ├── docs/
 │   └── BUG_REPORT.md                  # Known bugs, their status and GitHub issues
-├── tests/                             # Automated test suite (pytest)
-│   ├── __init__.py
-│   ├── test_customers.py
-│   ├── test_inventory.py
-│   ├── test_mechanics.py
-│   ├── test_security.py
-│   ├── test_service_tickets.py
-│   └── test_vehicles.py
+├── tests/                             # pytest suite, one test file per resource plus test_security.py
 ├── .env.example                       # Template for local environment variables
 ├── .gitignore
+├── CLAUDE.md                          # Working rules for Claude Code in this repo
 ├── config.py                          # Development, testing and production configurations
 ├── flask_app.py                       # Production entry point
 ├── LICENSE
@@ -203,6 +196,7 @@ mechanic_shop_api/
 ├── pytest.ini                         # Test configuration
 ├── README.md                          # Project documentation
 ├── requirements.txt                   # Python dependencies
+├── ROADMAP.md                         # Planned work: stock control and related issues
 ├── run.py                             # Local development entry point
 └── seed.py                            # Demo data seeding script (see Demo Data)
 ```
@@ -254,7 +248,7 @@ Copy the template at the repo root and fill in your own values:
 cp .env.example .env
 ```
 
-`.env.example` lists every variable the app reads (`SECRET_KEY`, `DATABASE_URL`, and the optional `REDIS_URL` and `PORT`) with placeholder values and a one-line comment for each. `.env` is gitignored, so your real values stay local.
+`.env.example` lists every variable the app reads (`SECRET_KEY`, `DATABASE_URL`, and the optional `PORT`) with placeholder values and a one-line comment for each. `.env` is gitignored, so your real values stay local.
 
 ### 5. Database Setup
 
@@ -510,7 +504,7 @@ python seed.py
 The rest of the app (`flask_app.py`, `run.py`) does _not_ load `.env` automatically — for those, export `DATABASE_URL` into your shell first:
 
 ```bash
-export DATABASE_URL="postgresql://postgres:[email protected]:5432/postgres"
+export DATABASE_URL="postgresql://USER:PASSWORD@HOST:6543/postgres"
 ```
 
 ### Model limitations reflected in the seed data
@@ -535,7 +529,7 @@ The live API is open to the public, so it is protected in layers:
 - **Per-client limits behind Render's proxy**: in production the app reads the client IP from the proxy header, so one visitor cannot use up everyone's limit.
 - **Nightly reseed** (see above) as a backstop for anything the limits do not stop.
 
-Limits are held in memory, which is correct for the single free-tier instance this runs on. Running more than one instance or worker would need a shared store such as Redis.
+Limits are held in memory, which is correct for the single free-tier instance this runs on. Running more than one instance or worker would need a shared store such as Redis. This project does not currently set one up.
 
 ### Known limitations
 
@@ -601,18 +595,9 @@ From initial Flask routes to production deployment with automated testing - this
 
 ---
 
-## Future Enhancements
+## Roadmap
 
-These are scoped ideas, not committed roadmap items:
-
-- **Inventory stock tracking**: track quantity in stock per item,
-  automatically decrement/increment as items are added to or removed
-  from tickets, and block adding an item if requested quantity exceeds
-  available stock. Would require adding a ticket status field (open/
-  closed) to define what "committed to an open ticket" means.
-- **Reporting endpoints**: current inventory levels across all items,
-  which items are committed to open tickets and how many, ticket count
-  per mechanic.
+Planned work is tracked in [ROADMAP.md](ROADMAP.md) and the open GitHub issues.
 
   ***
 

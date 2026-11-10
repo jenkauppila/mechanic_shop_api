@@ -1,7 +1,7 @@
 import os
 from flask import Flask, request
 from werkzeug.middleware.proxy_fix import ProxyFix
-from .extensions import ma, limiter, cache
+from .extensions import ma, limiter
 from .models import db  # Import the SQLAlchemy instance from models
 from .blueprints.customers import customers_bp  # Import the customers blueprint
 from .blueprints.mechanics import mechanics_bp  # Import the mechanics blueprint
@@ -40,12 +40,6 @@ def create_app(config_name):
     else:
         raise ValueError("Invalid config name")
 
-    # Override rate limiter storage for production if Redis URL is available
-    if config_name == "ProductionConfig" and os.environ.get("REDIS_URL"):
-        app.config["RATELIMIT_STORAGE_URL"] = os.environ.get("REDIS_URL")
-    elif config_name != "ProductionConfig":
-        app.config["RATELIMIT_STORAGE_URL"] = "memory://"
-
     # On Render the app sits behind a reverse proxy. Without this, every
     # visitor would share the proxy's IP address and therefore one rate
     # limit bucket. x_for=1 trusts only the one proxy hop Render adds.
@@ -63,7 +57,6 @@ def create_app(config_name):
     ma.init_app(app)  # Initialize Marshmallow
     db.init_app(app)  # Initialize SQLAlchemy
     limiter.init_app(app)
-    cache.init_app(app)  # Initialize Flask-Caching
 
     # The default limit should not apply to the uptime check, the Swagger UI
     # (which loads many assets per page view) or static files.

@@ -4,13 +4,12 @@ marshmallow==4.0.0
 flask-marshmallow==1.3.0
 marshmallow-sqlalchemy==1.4.2
 Flask-Limiter==3.11.0
-Flask-Caching==2.3.1
 flask-swagger-ui==5.21.0
 python-jose==3.5.0
 python-dotenv==1.2.3
 pg8000==1.31.2
+# Pinned on purpose: scramp 1.5.0 breaks pg8000 1.31.2 database connections
 scramp==1.4.18
-redis==6.2.0
 gunicorn==23.0.0
 pytest==8.4.1
 pytest-html==4.1.1

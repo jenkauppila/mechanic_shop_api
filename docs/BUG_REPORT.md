@@ -178,7 +178,7 @@ A bug marked "Fixed in PR #7" was fixed by [PR #7](https://github.com/jenkauppil
 
 **Severity:** Low
 
-**Status:** Fixed in PR #7 (README corrected).
+**Status:** Fixed in PR #7 (README corrected). The unused Flask-Caching setup and the non-functional Redis override were later removed from the code.
 
 ---
 
