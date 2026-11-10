@@ -86,18 +86,18 @@ As someone with ADHD, I pivoted from the built-in [unittest](https://docs.python
 
 ## 📦 Tech Stack
 
-| Feature         | Technology / Tool                                                  |
-| --------------- | ------------------------------------------------------------------ |
-| Language        | Python 3.9+ (CI pinned to 3.12)                                    |
-| Framework       | Flask 3.1.1                                                        |
-| ORM             | Flask-SQLAlchemy 3.1.1, SQLAlchemy 2.0.41                          |
-| Database        | PostgreSQL via Supabase (Production), SQLite (Dev/Test)            |
-| Adapter         | pg8000 1.31.2                                                      |
-| Auth & Security | JWT (python-jose), Werkzeug, Flask-Limiter                         |
-| Documentation   | Swagger UI (flask-swagger-ui)                                      |
-| Testing         | Pytest, pytest-html, Postman                                       |
-| Deployment      | Gunicorn, Render                                                   |
-| CI/CD           | GitHub Actions                                                     |
+| Feature         | Technology / Tool                                       |
+| --------------- | ------------------------------------------------------- |
+| Language        | Python 3.9+ (CI pinned to 3.12)                         |
+| Framework       | Flask 3.1.1                                             |
+| ORM             | Flask-SQLAlchemy 3.1.1, SQLAlchemy 2.0.41               |
+| Database        | PostgreSQL via Supabase (Production), SQLite (Dev/Test) |
+| Adapter         | pg8000 1.31.2                                           |
+| Auth & Security | JWT (python-jose), Werkzeug, Flask-Limiter              |
+| Documentation   | Swagger UI (flask-swagger-ui)                           |
+| Testing         | Pytest, pytest-html, Postman                            |
+| Deployment      | Gunicorn, Render                                        |
+| CI/CD           | GitHub Actions                                          |
 
 ---
 
@@ -294,23 +294,23 @@ The API is fully documented using **Swagger/OpenAPI 2.0** specification. Each en
 
 ### Key Endpoints:
 
-| Resource        | Method | Endpoint                     | Description                                                         |
-| --------------- | ------ | ---------------------------- | ------------------------------------------------------------------- |
-| Customers       | POST   | `/customers`                 | Register new customer                                               |
-| Customers       | POST   | `/customers/login`           | Customer authentication                                             |
-| Service Tickets | GET    | `/service_tickets/my-tickets` | Get the logged-in customer's service tickets (Auth)                |
-| Vehicles        | POST   | `/vehicles`                  | Register a vehicle on your own account (Auth)                       |
-| Vehicles        | PUT    | `/vehicles/<id>`             | Update one of your own vehicles (Auth)                              |
-| Vehicles        | DELETE | `/vehicles/<id>`             | Delete one of your own vehicles (Auth)                              |
-| Vehicles        | GET    | `/vehicles`                  | List all vehicles                                                   |
-| Mechanics       | GET    | `/mechanics`                 | List all mechanics                                                  |
-| Mechanics       | GET    | `/mechanics/usage`           | Mechanics ranked by tickets completed                               |
-| Service Tickets | GET    | `/service_tickets`           | List all service tickets                                            |
-| Service Tickets | POST   | `/service_tickets`           | Create a ticket for a customer's vehicle                            |
-| Service Tickets | PUT    | `/service_tickets/<id>/edit` | Add/remove mechanics and inventory (with quantity) on a ticket      |
-| Service Tickets | DELETE | `/service_tickets/<id>`      | Delete a ticket (blocked if mechanics/inventory are still assigned) |
-| Inventory       | GET    | `/inventory`                 | List inventory items                                                |
-| Inventory       | POST   | `/inventory`                 | Add a new inventory item                                            |
+| Resource        | Method | Endpoint                      | Description                                                         |
+| --------------- | ------ | ----------------------------- | ------------------------------------------------------------------- |
+| Customers       | POST   | `/customers`                  | Register new customer                                               |
+| Customers       | POST   | `/customers/login`            | Customer authentication                                             |
+| Service Tickets | GET    | `/service_tickets/my-tickets` | Get the logged-in customer's service tickets (Auth)                 |
+| Vehicles        | POST   | `/vehicles`                   | Register a vehicle on your own account (Auth)                       |
+| Vehicles        | PUT    | `/vehicles/<id>`              | Update one of your own vehicles (Auth)                              |
+| Vehicles        | DELETE | `/vehicles/<id>`              | Delete one of your own vehicles (Auth)                              |
+| Vehicles        | GET    | `/vehicles`                   | List all vehicles                                                   |
+| Mechanics       | GET    | `/mechanics`                  | List all mechanics                                                  |
+| Mechanics       | GET    | `/mechanics/usage`            | Mechanics ranked by tickets completed                               |
+| Service Tickets | GET    | `/service_tickets`            | List all service tickets                                            |
+| Service Tickets | POST   | `/service_tickets`            | Create a ticket for a customer's vehicle                            |
+| Service Tickets | PUT    | `/service_tickets/<id>/edit`  | Add/remove mechanics and inventory (with quantity) on a ticket      |
+| Service Tickets | DELETE | `/service_tickets/<id>`       | Delete a ticket (blocked if mechanics/inventory are still assigned) |
+| Inventory       | GET    | `/inventory`                  | List inventory items                                                |
+| Inventory       | POST   | `/inventory`                  | Add a new inventory item                                            |
 
 ---
 
@@ -554,10 +554,7 @@ This project began as my final capstone for Coding Temple's Software Development
 
 ## Acknowledgments
 
-This project began as a capstone and was developed independently. Special thanks to:
-
-- **Coding Temple Staff** - Technical Support & Code Reviews
-- **Pytest Community** - For creating an accessible testing framework that supports neurodiverse learning styles
+This project began as a capstone and was developed independently.
 
 ### Learning Journey
 
@@ -601,6 +598,6 @@ From initial Flask routes to production deployment with automated testing - this
 
 Planned work is tracked in [ROADMAP.md](ROADMAP.md) and the open GitHub issues.
 
-  ***
+---
 
 _Built with ❤️ and ☕ by Jen Kauppila_
