@@ -16,8 +16,8 @@ Two open issues come first, because stock reservations happen on service tickets
 This project is a public demo. The goal is to protect the back end while still letting visitors explore freely. How to do that is not decided yet. Options being considered:
 
 - A one-click guest sign-in in a future front end that creates a throwaway demo customer behind the scenes. The API keeps its login and ownership checks, and visitors never see a login screen.
-- A clear on-screen note that a real shop would require a login for these actions.
 - A fictional demo staff account for admin-level actions.
+- All write operations will retain appropriate authentication and ownership checks. Guest sign-in, explanatory notes, and fictional demo accounts are options for making those protections easy for visitors to explore.
 
 The decision will be recorded here once it is made.
 
