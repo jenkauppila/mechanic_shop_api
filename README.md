@@ -1,10 +1,12 @@
 # 🧰 Mechanic Shop API
 
+[![CI](https://github.com/jenkauppila/mechanic_shop_api/actions/workflows/main.yaml/badge.svg)](https://github.com/jenkauppila/mechanic_shop_api/actions/workflows/main.yaml)
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue?logo=python)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Flask-3.1-black?logo=flask)](https://flask.palletsprojects.com/)
 [![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-ORM-red?logo=python)](https://www.sqlalchemy.org/)
+[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com/)
 [![Swagger](https://img.shields.io/badge/Swagger-UI-green?logo=swagger)](https://swagger.io/tools/swagger-ui/)
-[![Postman](https://img.shields.io/badge/Tested%20with-Postman-orange?logo=postman)](https://www.postman.com/)
+[![pytest](https://img.shields.io/badge/Tested%20with-pytest-0A9EDC?logo=pytest&logoColor=white)](https://docs.pytest.org/)
 [![Render](https://img.shields.io/badge/Deploy%20on-Render-blueviolet?logo=render)](https://render.com/)
 
 #
